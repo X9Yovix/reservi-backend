@@ -1,0 +1,40 @@
+stages:
+  - build
+  - check
+
+variables:
+  NODE_IMAGE: 'node:20'
+
+install_dependencies:
+  stage: build
+  image: $NODE_IMAGE
+  script:
+    - 'npm install'
+  artifacts:
+    paths:
+      - node_modules/
+      - package-lock.json
+
+lint:
+  stage: check
+  script:
+    - 'npm run lint'
+  allow_failure: false
+
+standards:
+  stage: check
+  script:
+    - 'npm run standard'
+  rules:
+    - exists:
+        - build/
+  allow_failure: false
+
+format:
+  stage: check
+  script:
+    - 'npm run prettier'
+  rules:
+    - exists:
+        - build/
+  allow_failure: false
