@@ -4,6 +4,7 @@ const process = require("process")
 const cors = require("cors")
 const swaggerUI = require("swagger-ui-express")
 const swaggerSpec = require("./swagger")
+const connectDB = require("./config/dbconfig.js")
 
 const usersRouter = require("./routes/users")
 
@@ -11,7 +12,17 @@ dotenv.config()
 const port = process.env.PORT
 
 const app = express()
-app.listen(port)
+
+connectDB()
+  .then(() => {
+    app.listen(port, () => {
+      console.log(`Server is running on port ${port}`)
+    })
+  })
+  .catch((error) => {
+    console.error("Error connecting to MongoDB:", error)
+    process.exit(1)
+  })
 
 app.use(cors())
 app.use(express.json())
