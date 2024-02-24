@@ -1,15 +1,18 @@
 stages:
   - build
   - check
+  - cleanup
 
-variables:
-  NODE_IMAGE: 'node:20'
+.global-rules:
+  image: node:20
+  dependencies:
+    - install_modules
 
-install_dependencies:
+install_modules:
   stage: build
-  image: $NODE_IMAGE
+  image: node:20
   script:
-    - 'npm install'
+    - npm install
   artifacts:
     paths:
       - node_modules/
@@ -17,24 +20,30 @@ install_dependencies:
 
 lint:
   stage: check
+  extends: .global-rules
   script:
-    - 'npm run lint'
+    - npm run lint
   allow_failure: false
 
 standards:
   stage: check
+  extends: .global-rules
   script:
-    - 'npm run standard'
-  rules:
-    - exists:
-        - build/
+    - npm run standard
   allow_failure: false
 
 format:
   stage: check
+  extends: .global-rules
   script:
-    - 'npm run prettier'
-  rules:
-    - exists:
-        - build/
+    - npm run prettier
   allow_failure: false
+
+delete_artifacts:
+  image: alpine:latest
+  stage: cleanup
+  before_script:
+    - apk add --update curl
+  script:
+    - 'curl --request DELETE --header "PRIVATE-TOKEN: $ACCESS_TOKEN" "$CI_SERVER_URL/api/v4/projects/$CI_PROJECT_ID/artifacts"'
+  when: always
