@@ -25,13 +25,6 @@ lint:
     - npm run lint
   allow_failure: false
 
-standards:
-  stage: check
-  extends: .global-rules
-  script:
-    - npm run standard
-  allow_failure: false
-
 format:
   stage: check
   extends: .global-rules

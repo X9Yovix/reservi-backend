@@ -6,8 +6,6 @@
   "scripts": {
     "dev": "nodemon index.js",
     "lint": "npx eslint .",
-    "standard": "npx standard",
-    "standard:fix": "npx standard --fix",
     "prettier": "npx prettier . --check",
     "prettier:fix": "npx prettier . --write",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -30,7 +28,6 @@
   },
   "devDependencies": {
     "eslint": "^8.56.0",
-    "prettier": "^3.2.5",
-    "standard": "^17.1.0"
+    "prettier": "^3.2.5"
   }
 }
