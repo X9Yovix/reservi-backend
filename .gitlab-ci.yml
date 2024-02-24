@@ -62,7 +62,7 @@ delete_pipelines:
   image: alpine:latest
   stage: cleanup
   before_script:
-    - apk add --update curl
+    - apk add --update curl jq
   script:
     - 'PIPELINE_IDS=$(curl --header "PRIVATE-TOKEN: $ACCESS_TOKEN" "$CI_SERVER_URL/api/v4/projects/$CI_PROJECT_ID/pipelines" | jq -r ".[].id")'
     - 'for ID in $PIPELINE_IDS; do curl --request DELETE --header "PRIVATE-TOKEN: $ACCESS_TOKEN" "$CI_SERVER_URL/api/v4/projects/$CI_PROJECT_ID/pipelines/$ID"; done'
