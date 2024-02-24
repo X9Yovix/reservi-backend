@@ -48,6 +48,8 @@ format:
   allow_failure: false
 
 delete_artifacts:
+  except:
+        - main
   image: alpine:latest
   stage: cleanup
   before_script:
@@ -57,8 +59,10 @@ delete_artifacts:
   when: always
 
 delete_pipelines:
+  image: alpine:latest
   stage: cleanup
-  script:
+  before_script:
     - apk add --update curl
+  script:
     - 'for i in {1..30}; do curl --request DELETE --header "PRIVATE-TOKEN: $ACCESS_TOKEN" "$CI_SERVER_URL/api/v4/projects/$CI_PROJECT_ID/pipelines/$i"; done'
   when: always
