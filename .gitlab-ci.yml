@@ -64,5 +64,6 @@ delete_pipelines:
   before_script:
     - apk add --update curl
   script:
-    - 'for i in {1..30}; do curl --request DELETE --header "PRIVATE-TOKEN: $ACCESS_TOKEN" "$CI_SERVER_URL/api/v4/projects/$CI_PROJECT_ID/pipelines/$i"; done'
+    - 'PIPELINE_IDS=$(curl --header "PRIVATE-TOKEN: $ACCESS_TOKEN" "$CI_SERVER_URL/api/v4/projects/$CI_PROJECT_ID/pipelines" | jq -r ".[].id")'
+    - 'for ID in $PIPELINE_IDS; do curl --request DELETE --header "PRIVATE-TOKEN: $ACCESS_TOKEN" "$CI_SERVER_URL/api/v4/projects/$CI_PROJECT_ID/pipelines/$ID"; done'
   when: always
