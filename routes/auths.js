@@ -1,6 +1,7 @@
 const express = require("express")
 const router = express.Router()
 const User = require("../model/user")
+const jwt = require("jsonwebtoken")
 
 /**
  * @swagger
@@ -42,11 +43,11 @@ router.post("/register", async (req, res) => {
     res.status(200).json({ message: "User registered successfully" })
   } catch (error) {
     if (error.code === 11000 && error.keyPattern && error.keyPattern.email) {
-      console.error("Error registering user - Duplicate email", error);
-      res.status(400).json({ error: "Email is already registered" });
+      console.error("Error registering user - Duplicate email", error)
+      res.status(400).json({ error: "Email is already registered" })
     } else {
-      console.error("Error registering user", error);
-      res.status(500).json({ error: "Internal Server Error" });
+      console.error("Error registering user", error)
+      res.status(500).json({ error: "Internal Server Error" })
     }
   }
 })
@@ -87,7 +88,33 @@ router.post("/login", async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({ error: "Invalid credentials" })
     }
-    res.status(200).json({ message: "User logged in successfully" })
+    jwt.sign(
+      {
+        _id: user._id,
+        role: user.role
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "7 days" },
+      (err, token) => {
+        if (err) {
+          console.error("Error signing token", err)
+          return res.status(500).json({ error: "Internal Server Error" })
+        }
+        const userFiltered = {
+          _id: user._id,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          email: user.email,
+          address: user.address,
+          phone: user.phone
+        }
+        return res.status(200).json({
+          token: token,
+          user: userFiltered,
+          message: "User logged in successfully"
+        })
+      }
+    )
   } catch (error) {
     console.error("Error logging in user", error)
     res.status(500).json({ error: "Internal Server Error" })
