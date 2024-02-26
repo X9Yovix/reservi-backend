@@ -41,8 +41,13 @@ router.post("/register", async (req, res) => {
     await user.save()
     res.status(200).json({ message: "User registered successfully" })
   } catch (error) {
-    console.error("Error registering user", error)
-    res.status(500).json({ error: "Internal Server Error" })
+    if (error.code === 11000 && error.keyPattern && error.keyPattern.email) {
+      console.error("Error registering user - Duplicate email", error);
+      res.status(400).json({ error: "Email is already registered" });
+    } else {
+      console.error("Error registering user", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
   }
 })
 
