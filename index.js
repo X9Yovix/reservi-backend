@@ -4,9 +4,10 @@ const process = require("process")
 const cors = require("cors")
 const swaggerUI = require("swagger-ui-express")
 const swaggerSpec = require("./swagger")
-const connectDB = require("./config/dbconfig.js")
+const connectDB = require("./config/dbconfig")
 
 const usersRouter = require("./routes/users")
+const authsRouter = require("./routes/auths")
 
 dotenv.config()
 const port = process.env.PORT
@@ -31,5 +32,6 @@ app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerSpec))
 
 const apiRouter = express.Router()
 apiRouter.use("/users", usersRouter)
+apiRouter.use("/auths", authsRouter)
 
 app.use("/api", apiRouter)
