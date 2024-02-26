@@ -31,23 +31,21 @@ const userSchema = new mongoose.Schema({
   }
 })
 
-const saltRounds = 10;
+const saltRounds = 10
 
 userSchema.pre("save", async function (next) {
   const user = this
 
-  if (!user.isModified("password"))
-    return next()
+  if (!user.isModified("password")) return next()
 
   try {
-    const salt = await bcrypt.genSalt(saltRounds);
-    const hashedPassword = await bcrypt.hash(user.password, salt);
+    const salt = await bcrypt.genSalt(saltRounds)
+    const hashedPassword = await bcrypt.hash(user.password, salt)
     user.password = hashedPassword
     next()
   } catch (error) {
     return next(error)
   }
 })
-
 
 module.exports = mongoose.model("users", userSchema)
