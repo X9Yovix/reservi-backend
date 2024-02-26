@@ -5,6 +5,7 @@ const cors = require("cors")
 const swaggerUI = require("swagger-ui-express")
 const swaggerSpec = require("./swagger")
 const connectDB = require("./config/dbconfig")
+const authMiddleware = require("./middleware/authMiddleware")
 
 const usersRouter = require("./routes/users")
 const authsRouter = require("./routes/auths")
@@ -31,7 +32,7 @@ app.use(express.json())
 app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerSpec))
 
 const apiRouter = express.Router()
-apiRouter.use("/users", usersRouter)
+apiRouter.use("/users", authMiddleware, usersRouter)
 apiRouter.use("/auths", authsRouter)
 
 app.use("/api", apiRouter)
