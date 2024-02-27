@@ -4,13 +4,24 @@ const User = require("../model/user")
 const ResetPassword = require("../model/reset_password")
 const jwt = require("jsonwebtoken")
 const cryptoJs = require("crypto-js")
-const bcrypt = require("bcryptjs")
+const sendEmailService = require("../config/nodemailer")
+const fs = require("fs")
+const path = require("path")
+
+/**
+ * @swagger
+ * tags:
+ *   name: Authentication
+ *   description: API endpoints for user authentication
+ */
+
 /**
  * @swagger
  * /auths/register:
  *   post:
  *     summary: Register a new user
  *     description: Register a new user
+ *     tags: [Authentication]
  *     requestBody:
  *       required: true
  *       content:
@@ -42,14 +53,20 @@ router.post("/register", async (req, res) => {
   try {
     const user = new User({ ...req.body, role: "user" })
     await user.save()
-    res.status(200).json({ message: "User registered successfully" })
+    res.status(200).json({
+      message: "User registered successfully"
+    })
   } catch (error) {
     if (error.code === 11000 && error.keyPattern && error.keyPattern.email) {
       console.error("Error registering user - Duplicate email", error)
-      res.status(400).json({ error: "Email is already registered" })
+      res.status(400).json({
+        error: "Email is already registered"
+      })
     } else {
       console.error("Error registering user", error)
-      res.status(500).json({ error: "Internal Server Error" })
+      res.status(500).json({
+        error: "Internal Server Error"
+      })
     }
   }
 })
@@ -60,6 +77,7 @@ router.post("/register", async (req, res) => {
  *   post:
  *     summary: Login a user
  *     description: Login a user
+ *     tags: [Authentication]
  *     requestBody:
  *       required: true
  *       content:
@@ -84,11 +102,15 @@ router.post("/login", async (req, res) => {
   try {
     const user = await User.findOne({ email: req.body.email })
     if (!user) {
-      return res.status(400).json({ error: "Invalid credentials" })
+      return res.status(400).json({
+        error: "Invalid credentials"
+      })
     }
     const isMatch = await user.comparePassword(req.body.password)
     if (!isMatch) {
-      return res.status(400).json({ error: "Invalid credentials" })
+      return res.status(400).json({
+        error: "Invalid credentials"
+      })
     }
     jwt.sign(
       {
@@ -100,7 +122,9 @@ router.post("/login", async (req, res) => {
       (err, token) => {
         if (err) {
           console.error("Error signing token", err)
-          return res.status(500).json({ error: "Internal Server Error" })
+          return res.status(500).json({
+            error: "Internal Server Error"
+          })
         }
         const userFiltered = {
           _id: user._id,
@@ -119,7 +143,9 @@ router.post("/login", async (req, res) => {
     )
   } catch (error) {
     console.error("Error logging in user", error)
-    res.status(500).json({ error: "Internal Server Error" })
+    res.status(500).json({
+      error: "Internal Server Error"
+    })
   }
 })
 
@@ -129,6 +155,7 @@ router.post("/login", async (req, res) => {
  *   post:
  *     summary: Request a password reset
  *     description: Send an email with a reset password link
+ *     tags: [Authentication]
  *     requestBody:
  *       required: true
  *       content:
@@ -152,7 +179,9 @@ router.post("/reset-password/request", async (req, res) => {
 
     const user = await User.findOne({ email })
     if (!user) {
-      return res.status(400).json({ error: "Email not found" })
+      return res.status(400).json({
+        error: "Email not found"
+      })
     }
 
     const existingResetToken = await ResetPassword.findOne({
@@ -172,18 +201,36 @@ router.post("/reset-password/request", async (req, res) => {
         token: resetToken,
         expires: new Date(Date.now() + 3600000)
       })
-
       await resetPassword.save()
     }
+    const emailSubject = "Password Reset"
+    const htmlTemplatePath = path.join(
+      __dirname,
+      "../view",
+      "reset_password.html"
+    )
+    const htmlTemplate = fs.readFileSync(htmlTemplatePath, "utf-8")
+    const htmlContent = htmlTemplate.replace(
+      "resetLink",
+      `${process.env.FRONTEND_URL}/reset-password/${resetToken}`
+    )
 
-    res
-      .status(200)
-      .json({
+    const emailSent = await sendEmailService(email, emailSubject, htmlContent)
+
+    if (emailSent) {
+      return res.status(200).json({
         message: "Password reset email sent successfully, check your email"
       })
+    } else {
+      return res.status(500).json({
+        error: "Internal Server Error"
+      })
+    }
   } catch (error) {
     console.error("Error requesting password reset", error)
-    res.status(500).json({ error: "Internal Server Error" })
+    res.status(500).json({
+      error: "Internal Server Error"
+    })
   }
 })
 
@@ -193,6 +240,7 @@ router.post("/reset-password/request", async (req, res) => {
  *   post:
  *     summary: Reset password
  *     description: Reset user's password using a verified token
+ *     tags: [Authentication]
  *     requestBody:
  *       required: true
  *       content:
@@ -220,7 +268,9 @@ router.post("/reset-password/reset/:token", async (req, res) => {
     const token = req.params.token
 
     if (password !== confirmPassword) {
-      return res.status(400).json({ error: "Passwords do not match" })
+      return res.status(400).json({
+        error: "Passwords do not match"
+      })
     }
 
     const resetPasswordEntry = await ResetPassword.findOne({
@@ -228,13 +278,18 @@ router.post("/reset-password/reset/:token", async (req, res) => {
       expires: { $gt: Date.now() }
     })
 
-    if (!resetPasswordEntry)
-      return res.status(400).json({ error: "Invalid or expired token" })
-
+    if (!resetPasswordEntry) {
+      return res.status(400).json({
+        error: "Invalid or expired token"
+      })
+    }
     const user = await User.findById(resetPasswordEntry.user)
 
-    if (!user)
-      return res.status(400).json({ error: "Invalid or expired token" })
+    if (!user) {
+      return res.status(400).json({
+        error: "Invalid or expired token"
+      })
+    }
 
     user.password = password
 
@@ -242,10 +297,14 @@ router.post("/reset-password/reset/:token", async (req, res) => {
 
     await user.save()
 
-    res.status(200).json({ message: "Password reset successful" })
+    res.status(200).json({
+      message: "Password reset successful"
+    })
   } catch (error) {
     console.error("Error resetting password", error)
-    res.status(500).json({ error: "Internal Server Error" })
+    res.status(500).json({
+      error: "Internal Server Error"
+    })
   }
 })
 

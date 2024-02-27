@@ -18,10 +18,14 @@ router.get("/", async (req, res) => {
   try {
     const users = await User.find()
     const usersData = users.map((user) => user.toObject())
-    res.status(200).json({ users: usersData })
+    res.status(200).json({
+      users: usersData
+    })
   } catch (error) {
     console.error("Error fetching users", error)
-    res.status(500).json({ error: "Internal Server Error" })
+    res.status(500).json({
+      error: "Internal Server Error"
+    })
   }
 })
 
