@@ -1,6 +1,6 @@
 const mongoose = require("mongoose")
 
-const resetPasswordSchema = new mongoose.Schema({
+const resetPasswordsSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
@@ -10,4 +10,4 @@ const resetPasswordSchema = new mongoose.Schema({
   expires: Date
 })
 
-module.exports = mongoose.model("ResetPassword", resetPasswordSchema)
+module.exports = mongoose.model("reset_passwords", resetPasswordsSchema)

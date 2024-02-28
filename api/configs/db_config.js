@@ -1,5 +1,4 @@
 const mongoose = require("mongoose")
-const process = require("process")
 
 const connectDB = async () => {
   try {

@@ -1,16 +1,17 @@
 const express = require("express")
 const dotenv = require("dotenv")
+dotenv.config()
 const process = require("process")
 const cors = require("cors")
+const corsOptions = require("./api/configs/cors_options")
 const swaggerUI = require("swagger-ui-express")
-const swaggerSpec = require("./swagger")
-const connectDB = require("./config/db_config")
-const authMiddleware = require("./middleware/auth_middleware")
+const swaggerSpec = require("./api/configs/swagger")
+const connectDB = require("./api/configs/db_config")
+const authMiddleware = require("./api/middlewares/auths_middleware")
 
-const usersRouter = require("./routes/users")
-const authsRouter = require("./routes/auths")
+const usersRouter = require("./api/routes/users")
+const authsRouter = require("./api/routes/auths")
 
-dotenv.config()
 const port = process.env.PORT
 
 const app = express()
@@ -26,7 +27,7 @@ connectDB()
     process.exit(1)
   })
 
-app.use(cors())
+app.use(cors(corsOptions))
 app.use(express.json())
 
 app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerSpec))

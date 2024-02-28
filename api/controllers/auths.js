@@ -1,57 +1,14 @@
-const express = require("express")
-const router = express.Router()
-const User = require("../model/user")
-const ResetPassword = require("../model/reset_password")
+const usersModel = require("../models/users")
+const resetPasswordsModel = require("../models/reset_passwords")
 const jwt = require("jsonwebtoken")
 const cryptoJs = require("crypto-js")
-const sendEmailService = require("../config/nodemailer")
+const sendEmailService = require("../configs/nodemailer")
 const fs = require("fs")
 const path = require("path")
 
-/**
- * @swagger
- * tags:
- *   name: Authentication
- *   description: API endpoints for user authentication
- */
-
-/**
- * @swagger
- * /auths/register:
- *   post:
- *     summary: Register a new user
- *     description: Register a new user
- *     tags: [Authentication]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               first_name:
- *                 type: string
- *               last_name:
- *                 type: string
- *               email:
- *                 type: string
- *               password:
- *                 type: string
- *               phone:
- *                 type: string
- *                 required: false
- *               address:
- *                 type: string
- *                 required: false
- *     responses:
- *       200:
- *         description: Success
- *       500:
- *         description: Internal Server Error
- */
-router.post("/register", async (req, res) => {
+const register = async (req, res) => {
   try {
-    const user = new User({ ...req.body, role: "user" })
+    const user = new usersModel({ ...req.body, role: "user" })
     await user.save()
     res.status(200).json({
       message: "User registered successfully"
@@ -69,38 +26,11 @@ router.post("/register", async (req, res) => {
       })
     }
   }
-})
+}
 
-/**
- * @swagger
- * /auths/login:
- *   post:
- *     summary: Login a user
- *     description: Login a user
- *     tags: [Authentication]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
- *               password:
- *                 type: string
- *     responses:
- *       200:
- *         description: Success
- *       400:
- *         description: Bad Request
- *       500:
- *         description: Internal Server Error
- */
-
-router.post("/login", async (req, res) => {
+const login = async (req, res) => {
   try {
-    const user = await User.findOne({ email: req.body.email })
+    const user = await usersModel.findOne({ email: req.body.email })
     if (!user) {
       return res.status(400).json({
         error: "Invalid credentials"
@@ -118,7 +48,7 @@ router.post("/login", async (req, res) => {
         role: user.role
       },
       process.env.JWT_SECRET,
-      { expiresIn: "7 days" },
+      { expiresIn: process.env.JWT_EXPIRATION_DATE },
       (err, token) => {
         if (err) {
           console.error("Error signing token", err)
@@ -147,44 +77,20 @@ router.post("/login", async (req, res) => {
       error: "Internal Server Error"
     })
   }
-})
+}
 
-/**
- * @swagger
- * /auths/reset-password/request:
- *   post:
- *     summary: Request a password reset
- *     description: Send an email with a reset password link
- *     tags: [Authentication]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
- *     responses:
- *       200:
- *         description: Success
- *       400:
- *         description: Bad Request
- *       500:
- *         description: Internal Server Error
- */
-router.post("/reset-password/request", async (req, res) => {
+const resetPasswordRequest = async (req, res) => {
   try {
     const { email } = req.body
 
-    const user = await User.findOne({ email })
+    const user = await usersModel.findOne({ email })
     if (!user) {
       return res.status(400).json({
         error: "Email not found"
       })
     }
 
-    const existingResetToken = await ResetPassword.findOne({
+    const existingResetToken = await resetPasswordsModel.findOne({
       user: user._id,
       expires: { $gt: Date.now() }
     })
@@ -196,7 +102,7 @@ router.post("/reset-password/request", async (req, res) => {
     } else {
       resetToken = cryptoJs.SHA256(email + Date.now().toString()).toString()
 
-      const resetPassword = new ResetPassword({
+      const resetPassword = new resetPasswordsModel({
         user: user._id,
         token: resetToken,
         expires: new Date(Date.now() + 3600000)
@@ -206,7 +112,7 @@ router.post("/reset-password/request", async (req, res) => {
     const emailSubject = "Password Reset"
     const htmlTemplatePath = path.join(
       __dirname,
-      "../view",
+      "../views",
       "reset_password.html"
     )
     const htmlTemplate = fs.readFileSync(htmlTemplatePath, "utf-8")
@@ -232,37 +138,9 @@ router.post("/reset-password/request", async (req, res) => {
       error: "Internal Server Error"
     })
   }
-})
+}
 
-/**
- * @swagger
- * /auths/reset-password/reset:
- *   post:
- *     summary: Reset password
- *     description: Reset user's password using a verified token
- *     tags: [Authentication]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               token:
- *                 type: string
- *               password:
- *                 type: string
- *               confirmPassword:
- *                 type: string
- *     responses:
- *       200:
- *         description: Success
- *       400:
- *         description: Bad Request
- *       500:
- *         description: Internal Server Error
- */
-router.post("/reset-password/reset/:token", async (req, res) => {
+const resetPassword = async (req, res) => {
   try {
     const { password, confirmPassword } = req.body
     const token = req.params.token
@@ -273,7 +151,7 @@ router.post("/reset-password/reset/:token", async (req, res) => {
       })
     }
 
-    const resetPasswordEntry = await ResetPassword.findOne({
+    const resetPasswordEntry = await resetPasswordsModel.findOne({
       token,
       expires: { $gt: Date.now() }
     })
@@ -283,7 +161,7 @@ router.post("/reset-password/reset/:token", async (req, res) => {
         error: "Invalid or expired token"
       })
     }
-    const user = await User.findById(resetPasswordEntry.user)
+    const user = await usersModel.findById(resetPasswordEntry.user)
 
     if (!user) {
       return res.status(400).json({
@@ -306,6 +184,11 @@ router.post("/reset-password/reset/:token", async (req, res) => {
       error: "Internal Server Error"
     })
   }
-})
+}
 
-module.exports = router
+module.exports = {
+  register,
+  login,
+  resetPasswordRequest,
+  resetPassword
+}

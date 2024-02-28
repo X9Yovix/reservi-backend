@@ -1,7 +1,7 @@
 const mongoose = require("mongoose")
 const bcrypt = require("bcryptjs")
 
-const userSchema = new mongoose.Schema({
+const usersSchema = new mongoose.Schema({
   first_name: {
     type: String,
     required: true
@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema({
 
 const saltRounds = 10
 
-userSchema.pre("save", async function (next) {
+usersSchema.pre("save", async function (next) {
   const user = this
 
   if (!user.isModified("password")) {
@@ -50,7 +50,7 @@ userSchema.pre("save", async function (next) {
   }
 })
 
-userSchema.methods.comparePassword = async function (candidatePassword) {
+usersSchema.methods.comparePassword = async function (candidatePassword) {
   try {
     return await bcrypt.compare(candidatePassword, this.password)
   } catch (error) {
@@ -58,4 +58,4 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
   }
 }
 
-module.exports = mongoose.model("users", userSchema)
+module.exports = mongoose.model("users", usersSchema)
