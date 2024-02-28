@@ -15,6 +15,7 @@ const usersController = require("../controllers/users")
  *   get:
  *     summary: Get all users
  *     description: Retrieve a list of all users
+ *     tags: [Clients]
  *     responses:
  *       200:
  *         description: Success

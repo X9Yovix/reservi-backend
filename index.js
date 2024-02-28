@@ -27,10 +27,10 @@ connectDB()
     process.exit(1)
   })
 
+app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerSpec))
+
 app.use(cors(corsOptions))
 app.use(express.json())
-
-app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerSpec))
 
 const apiRouter = express.Router()
 apiRouter.use("/users", authMiddleware, usersRouter)
