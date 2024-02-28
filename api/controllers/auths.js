@@ -105,21 +105,14 @@ const resetPasswordRequest = async (req, res) => {
       const resetPassword = new resetPasswordsModel({
         user: user._id,
         token: resetToken,
-        expires: new Date(Date.now() + 3600000)
+        expires: new Date(Date.now() + parseInt(process.env.RESET_TOKEN_EXPIRATION_SECONDS))
       })
       await resetPassword.save()
     }
     const emailSubject = "Password Reset"
-    const htmlTemplatePath = path.join(
-      __dirname,
-      "../views",
-      "reset_password.html"
-    )
+    const htmlTemplatePath = path.join(__dirname, "../views", "reset_password.html")
     const htmlTemplate = fs.readFileSync(htmlTemplatePath, "utf-8")
-    const htmlContent = htmlTemplate.replace(
-      "resetLink",
-      `${process.env.FRONTEND_URL}/reset-password/${resetToken}`
-    )
+    const htmlContent = htmlTemplate.replace("resetLink", `${process.env.FRONTEND_URL}/reset-password/${resetToken}`)
 
     const emailSent = await sendEmailService(email, emailSubject, htmlContent)
 
@@ -144,12 +137,6 @@ const resetPassword = async (req, res) => {
   try {
     const { password, confirmPassword } = req.body
     const token = req.params.token
-
-    if (password !== confirmPassword) {
-      return res.status(400).json({
-        error: "Passwords do not match"
-      })
-    }
 
     const resetPasswordEntry = await resetPasswordsModel.findOne({
       token,

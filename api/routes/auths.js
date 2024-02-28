@@ -1,6 +1,11 @@
 const express = require("express")
 const router = express.Router()
 const authsController = require("../controllers/auths")
+const validate = require("../middlewares/validation_middleware")
+const loginValidationSchema = require("../validations/login_validation")
+const registerValidationSchema = require("../validations/register_validation")
+const requestResetPasswordValidationSchema = require("../validations/request_reset_password_validation")
+const resetPasswordValidationSchema = require("../validations/reset_password_validation")
 
 /**
  * @swagger
@@ -43,7 +48,7 @@ const authsController = require("../controllers/auths")
  *       500:
  *         description: Internal Server Error
  */
-router.post("/register", authsController.register)
+router.post("/register", validate(registerValidationSchema), authsController.register)
 
 /**
  * @swagger
@@ -72,7 +77,7 @@ router.post("/register", authsController.register)
  *         description: Internal Server Error
  */
 
-router.post("/login", authsController.login)
+router.post("/login", validate(loginValidationSchema), authsController.login)
 
 /**
  * @swagger
@@ -98,7 +103,7 @@ router.post("/login", authsController.login)
  *       500:
  *         description: Internal Server Error
  */
-router.post("/reset-password/request", authsController.resetPasswordRequest)
+router.post("/reset-password/request", validate(requestResetPasswordValidationSchema), authsController.resetPasswordRequest)
 
 /**
  * @swagger
@@ -128,6 +133,6 @@ router.post("/reset-password/request", authsController.resetPasswordRequest)
  *       500:
  *         description: Internal Server Error
  */
-router.post("/reset-password/reset/:token", authsController.resetPassword)
+router.post("/reset-password/reset/:token", validate(resetPasswordValidationSchema), authsController.resetPassword)
 
 module.exports = router
