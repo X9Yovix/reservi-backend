@@ -7,7 +7,8 @@ const authenticateJwt = (req, res, next) => {
       error: "Unauthorized - No token provided"
     })
   } else {
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    var jwtToken = token.split(" ")[1]
+    jwt.verify(jwtToken, process.env.JWT_SECRET, (err, decoded) => {
       if (err) {
         console.error("Error verifying token", err)
         return res.status(403).json({

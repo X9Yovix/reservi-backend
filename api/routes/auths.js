@@ -1,11 +1,11 @@
 const express = require("express")
 const router = express.Router()
 const authsController = require("../controllers/auths")
-const validate = require("../middlewares/validation_middleware")
-const loginValidationSchema = require("../validations/login_validation")
-const registerValidationSchema = require("../validations/register_validation")
-const requestResetPasswordValidationSchema = require("../validations/request_reset_password_validation")
-const resetPasswordValidationSchema = require("../validations/reset_password_validation")
+const validate = require("../middlewares/validation")
+const loginValidationSchema = require("../validations/login")
+const registerValidationSchema = require("../validations/register")
+const requestResetPasswordValidationSchema = require("../validations/request_reset_password")
+const resetPasswordValidationSchema = require("../validations/reset_password")
 
 /**
  * @swagger
