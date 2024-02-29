@@ -135,7 +135,7 @@ const resetPasswordRequest = async (req, res) => {
 
 const resetPassword = async (req, res) => {
   try {
-    const { password, confirmPassword } = req.body
+    const { password } = req.body
     const token = req.params.token
 
     const resetPasswordEntry = await resetPasswordsModel.findOne({
