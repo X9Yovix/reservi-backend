@@ -76,7 +76,6 @@ router.post("/register", validate(registerValidationSchema), authsController.reg
  *       500:
  *         description: Internal Server Error
  */
-
 router.post("/login", validate(loginValidationSchema), authsController.login)
 
 /**

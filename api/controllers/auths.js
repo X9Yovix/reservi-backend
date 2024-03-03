@@ -101,11 +101,11 @@ const resetPasswordRequest = async (req, res) => {
       resetToken = existingResetToken.token
     } else {
       resetToken = cryptoJs.SHA256(email + Date.now().toString()).toString()
-
+      const expiration = new Date(Date.now() + process.env.RESET_TOKEN_EXPIRATION_H * 60 * 60 * 1000);
       const resetPassword = new resetPasswordsModel({
         user: user._id,
         token: resetToken,
-        expires: new Date(Date.now() + parseInt(process.env.RESET_TOKEN_EXPIRATION_SECONDS))
+        expires: expiration
       })
       await resetPassword.save()
     }
