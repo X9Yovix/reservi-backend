@@ -12,6 +12,7 @@ const authMiddleware = require("./api/middlewares/auths")
 const usersRouter = require("./api/routes/users")
 const authsRouter = require("./api/routes/auths")
 const meetingRoomsRouter = require("./api/routes/meeting_rooms")
+const materialsRouter = require("./api/routes/materials")
 
 const port = process.env.PORT
 
@@ -34,8 +35,10 @@ app.use(cors(corsOptions))
 app.use(express.json())
 
 const apiRouter = express.Router()
-apiRouter.use("/users", authMiddleware, usersRouter)
+
 apiRouter.use("/auths", authsRouter)
+apiRouter.use("/users", authMiddleware, usersRouter)
+apiRouter.use("/materials", authMiddleware, materialsRouter)
 apiRouter.use("/meeting_rooms", authMiddleware, meetingRoomsRouter)
 
 app.use("/api", apiRouter)

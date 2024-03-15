@@ -1,22 +1,25 @@
 const mongoose = require("mongoose")
 
-const equipementScheman = mongoose.Schema({
+const materialsScheman = mongoose.Schema({
   name: {
     type: String,
     required: true
   },
   description: {
-    type: String,
+    type: String
+  },
+  totalQuantity: {
+    type: Number,
     required: true
   },
-  quantity: {
+  availableQuantity: {
     type: Number,
     required: true
   },
   availability: {
     type: Boolean,
-    required: true
+    default: true
   }
 })
 
-module.exports = mongoose.model("equipements", equipementScheman)
+module.exports = mongoose.model("materials", materialsScheman)
