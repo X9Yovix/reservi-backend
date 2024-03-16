@@ -11,8 +11,9 @@ const getAllMeetingRooms = async (req, res) => {
 
 const saveMeetingRoom = async (req, res) => {
   try {
-    const { name, capacity, length, width, height, materials } = req.body
+    const { name, capacity, length, width, height, categories, materials } = req.body
     const parseMaterials = JSON.parse(materials)
+    const parseCategories = JSON.parse(categories)
     const imagesMeeTingRoom = []
     req.files.map((file) => {
       imagesMeeTingRoom.push(file.path)
@@ -24,6 +25,7 @@ const saveMeetingRoom = async (req, res) => {
       width: width,
       height: height,
       images: imagesMeeTingRoom,
+      categories: parseCategories,
       materials: parseMaterials
     })
 

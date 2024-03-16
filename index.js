@@ -13,6 +13,7 @@ const usersRouter = require("./api/routes/users")
 const authsRouter = require("./api/routes/auths")
 const meetingRoomsRouter = require("./api/routes/meeting_rooms")
 const materialsRouter = require("./api/routes/materials")
+const categoriesRouter = require("./api/routes/categories")
 
 const port = process.env.PORT
 
@@ -40,5 +41,6 @@ apiRouter.use("/auths", authsRouter)
 apiRouter.use("/users", authMiddleware, usersRouter)
 apiRouter.use("/materials", authMiddleware, materialsRouter)
 apiRouter.use("/meeting_rooms", authMiddleware, meetingRoomsRouter)
+apiRouter.use("/categories", categoriesRouter)
 
 app.use("/api", apiRouter)

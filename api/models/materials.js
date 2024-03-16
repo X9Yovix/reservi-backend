@@ -1,6 +1,6 @@
 const mongoose = require("mongoose")
 
-const materialsScheman = mongoose.Schema({
+const materialsSchema = mongoose.Schema({
   name: {
     type: String,
     required: true
@@ -22,4 +22,4 @@ const materialsScheman = mongoose.Schema({
   }
 })
 
-module.exports = mongoose.model("materials", materialsScheman)
+module.exports = mongoose.model("materials", materialsSchema)

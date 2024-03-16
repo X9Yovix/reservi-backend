@@ -4,8 +4,7 @@ const getAllMaterials = async (req, res) => {
   const materials = await materialsModel.find()
   const data = materials.map((material) => material.toObject())
   res.status(200).json({
-    materials: data,
-    message: "Success"
+    materials: data
   })
 }
 

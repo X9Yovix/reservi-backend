@@ -29,6 +29,12 @@ const meetingRoomSchema = new mongoose.Schema({
     type: Array,
     required: true
   },
+  categories: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "categories"
+    }
+  ],
   materials: [
     {
       material: {
