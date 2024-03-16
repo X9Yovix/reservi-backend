@@ -41,6 +41,8 @@ router.get("/", meetingRoomsController.getAllMeetingRooms)
  *            properties:
  *              name:
  *                type: string
+ *              description:
+ *                type: string
  *              capacity:
  *                type: integer
  *              length:
@@ -64,5 +66,29 @@ router.get("/", meetingRoomsController.getAllMeetingRooms)
  *        description: Internal Server Error
  */
 router.post("/", upload.array("images"), meetingRoomsController.saveMeetingRoom)
+
+/**
+ * @swagger
+ * /meeting_rooms/{id}:
+ *   get:
+ *     summary: Get a meeting room
+ *     description: Retrieve a meeting room
+ *     tags:
+ *       - Meeting Rooms
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Success
+ *       404:
+ *         description: Meeting room not found
+ *       500:
+ *         description: Internal Server Error
+ */
+router.get("/:id", meetingRoomsController.getMeetingRoom)
 
 module.exports = router
