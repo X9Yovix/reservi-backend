@@ -5,6 +5,9 @@ const meetingRoomSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  description: {
+    type: String
+  },
   length: {
     type: Number,
     required: true

@@ -11,7 +11,7 @@ const getAllMeetingRooms = async (req, res) => {
 
 const saveMeetingRoom = async (req, res) => {
   try {
-    const { name, capacity, length, width, height, categories, materials } = req.body
+    const { name, description, capacity, length, width, height, categories, materials } = req.body
     const parseMaterials = JSON.parse(materials)
     const parseCategories = JSON.parse(categories)
     const imagesMeeTingRoom = []
@@ -20,6 +20,7 @@ const saveMeetingRoom = async (req, res) => {
     })
     const meetingRoom = new meetingRoomModel({
       name: name,
+      description: description,
       capacity: capacity,
       length: length,
       width: width,
