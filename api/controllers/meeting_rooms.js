@@ -75,7 +75,9 @@ const getMeetingRoom = async (req, res) => {
     })
   } catch (error) {
     console.error("Error occurred while fetching meeting room:", error)
-    res.status(500).json({ message: "Internal server error" })
+    res.status(500).json({
+      message: error
+    })
   }
 }
 

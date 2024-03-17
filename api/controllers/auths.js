@@ -22,7 +22,7 @@ const register = async (req, res) => {
     } else {
       console.error("Error registering user", error)
       res.status(500).json({
-        error: "Internal Server Error"
+        message: error
       })
     }
   }
@@ -53,7 +53,7 @@ const login = async (req, res) => {
         if (err) {
           console.error("Error signing token", err)
           return res.status(500).json({
-            error: "Internal Server Error"
+            message: error
           })
         }
         const userFiltered = {
@@ -74,7 +74,7 @@ const login = async (req, res) => {
   } catch (error) {
     console.error("Error logging in user", error)
     res.status(500).json({
-      error: "Internal Server Error"
+      message: error
     })
   }
 }
@@ -122,13 +122,13 @@ const resetPasswordRequest = async (req, res) => {
       })
     } else {
       return res.status(500).json({
-        error: "Internal Server Error"
+        message: error
       })
     }
   } catch (error) {
     console.error("Error requesting password reset", error)
     res.status(500).json({
-      error: "Internal Server Error"
+      message: error
     })
   }
 }
@@ -168,7 +168,7 @@ const resetPassword = async (req, res) => {
   } catch (error) {
     console.error("Error resetting password", error)
     res.status(500).json({
-      error: "Internal Server Error"
+      message: error
     })
   }
 }
