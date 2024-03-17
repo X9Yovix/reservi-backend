@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 const usersModel = require("../models/users")
 const resetPasswordsModel = require("../models/reset_passwords")
 const jwt = require("jsonwebtoken")

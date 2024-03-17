@@ -1,7 +1,8 @@
+/* eslint-disable no-unused-vars */
 const express = require("express")
 const dotenv = require("dotenv")
 dotenv.config()
-const process = require("process")
+
 const cors = require("cors")
 const corsOptions = require("./api/configs/cors_options")
 const swaggerUI = require("swagger-ui-express")

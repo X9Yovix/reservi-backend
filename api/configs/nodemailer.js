@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 const nodemailer = require("nodemailer")
 
 const transporter = nodemailer.createTransport({
