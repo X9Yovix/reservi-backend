@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 const usersModel = require("../models/users")
 const resetPasswordsModel = require("../models/reset_passwords")
 const jwt = require("jsonwebtoken")
@@ -54,7 +53,7 @@ const login = async (req, res) => {
         if (err) {
           console.error("Error signing token", err)
           return res.status(500).json({
-            message: error
+            message: err
           })
         }
         const userFiltered = {
@@ -123,7 +122,7 @@ const resetPasswordRequest = async (req, res) => {
       })
     } else {
       return res.status(500).json({
-        message: error
+        message: "Error sending password reset email, try again later"
       })
     }
   } catch (error) {
