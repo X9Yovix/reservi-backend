@@ -1,6 +1,8 @@
 const express = require("express")
 const router = express.Router()
 const categoriesController = require("../controllers/categories")
+const validate = require("../middlewares/validation")
+const saveValidationSchema = require("../validations/save_category")
 
 /**
  * @swagger
@@ -50,6 +52,6 @@ router.get("/", categoriesController.getAllCategories)
  *      500:
  *        description: Internal Server Error
  */
-router.post("/", categoriesController.saveCategory)
+router.post("/", validate(saveValidationSchema), categoriesController.saveCategory)
 
 module.exports = router

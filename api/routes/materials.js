@@ -1,6 +1,8 @@
 const express = require("express")
 const router = express.Router()
 const materialsController = require("../controllers/materials")
+const validate = require("../middlewares/validation")
+const saveValidationSchema = require("../validations/save_material")
 
 /**
  * @swagger
@@ -52,6 +54,6 @@ router.get("/", materialsController.getAllMaterials)
  *      500:
  *        description: Internal Server Error
  */
-router.post("/", materialsController.saveMaterial)
+router.post("/", validate(saveValidationSchema), materialsController.saveMaterial)
 
 module.exports = router

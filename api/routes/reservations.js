@@ -1,6 +1,8 @@
 const express = require("express")
 const router = express.Router()
 const reservationsController = require("../controllers/reservations")
+const validate = require("../middlewares/validation")
+const saveValidationSchema = require("../validations/save_reservation")
 
 /**
  * @swagger
@@ -44,8 +46,28 @@ const reservationsController = require("../controllers/reservations")
  *       500:
  *         description: Internal Server Error
  */
-router.post("/", reservationsController.saveReservation)
+router.post("/", validate(saveValidationSchema), reservationsController.saveReservation)
 
+/**
+ * @swagger
+ * /reservations/{room_id}:
+ *   get:
+ *     summary: Get reserved dates
+ *     description: Retrieve a list of reserved dates for a specific meeting room
+ *     tags: [Reservations]
+ *     parameters:
+ *       - in: path
+ *         name: room_id
+ *         required: true
+ *         description: Meeting room ID
+ *         schema:
+ *           type: number
+ *     responses:
+ *       200:
+ *         description: Success
+ *       500:
+ *         description: Internal Server Error
+ */
 router.get("/:room_id", reservationsController.getReservedDates)
 
 module.exports = router
