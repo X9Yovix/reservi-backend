@@ -70,4 +70,52 @@ router.post("/", validate(saveValidationSchema), reservationsController.saveRese
  */
 router.get("/:room_id", reservationsController.getReservedDates)
 
+/**
+ * @swagger
+ * /reservations/state/pendings:
+ *   get:
+ *     summary: Get pending reservations
+ *     description: Retrieve a list of pending reservations
+ *     tags: [Reservations]
+ *     responses:
+ *       200:
+ *         description: Success
+ *       500:
+ *         description: Internal Server Error
+ */
+router.get("/state/pendings", reservationsController.listPendingReservations)
+
+/**
+ * @swagger
+ * /reservations/state/decision/{id}:
+ *   put:
+ *     summary: Handle reservation state
+ *     description: Update the state of a reservation
+ *     tags: [Reservations]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Reservation ID
+ *         schema:
+ *           type: number
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               state:
+ *                 type: string
+ *             required:
+ *               - state
+ *     responses:
+ *       200:
+ *         description: The reservation state was updated successfully
+ *       500:
+ *         description: Internal Server Error
+ */
+router.put("/state/decision/:id", reservationsController.handleStateReservation)
+
 module.exports = router

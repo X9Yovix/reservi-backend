@@ -1,11 +1,17 @@
 const reservationsModel = require("../models/reservations")
+const usersModel = require("../models/users")
+const meetingRoomModel = require("../models/meeting_rooms")
+const sendEmailService = require("../configs/nodemailer")
+const fs = require("fs")
+const path = require("path")
 
 const saveReservation = async (req, res) => {
   try {
     const { participants, additional_info, meeting_rooms, users } = req.body
     const [start_date, end_date] = req.body.reservation_range
 
-    const today = new Date().setHours(0, 0, 0, 0)
+    //const today = new Date().setHours(0, 0, 0, 0)
+    const today = new Date()
     if (new Date(start_date).setHours(0, 0, 0, 0) < today || new Date(end_date).setHours(0, 0, 0, 0) < today) {
       return res.status(400).json({ message: "Reservation dates cannot be before today's date" })
     }
@@ -13,16 +19,19 @@ const saveReservation = async (req, res) => {
     const existingReservations = await reservationsModel.find({ meeting_rooms: meeting_rooms })
 
     const overlappingReservation = existingReservations.find((reservation) => {
-      const startDate = new Date(reservation.start_date)
-      const endDate = new Date(reservation.end_date)
-      const newStartDate = new Date(start_date)
-      const newEndDate = new Date(end_date)
+      const startDateExisting = new Date(reservation.start_date)
+      const endDateExisting = new Date(reservation.end_date)
 
-      return (
-        (newStartDate >= startDate && newStartDate <= endDate) ||
-        (newEndDate >= startDate && newEndDate <= endDate) ||
-        (newStartDate <= startDate && newEndDate >= endDate)
-      )
+      if (
+        (start_date >= startDateExisting && start_date <= endDateExisting) ||
+        (end_date >= startDateExisting && end_date <= endDateExisting) ||
+        (start_date <= startDateExisting && end_date >= endDateExisting)
+      ) {
+        if (reservation.status === "pending" || reservation.status === "confirmed") {
+          return true
+        }
+      }
+      return false
     })
 
     if (overlappingReservation) {
@@ -66,7 +75,92 @@ const getReservedDates = async (req, res) => {
   }
 }
 
+const listPendingReservations = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1
+    const pageSize = parseInt(req.query.pageSize) || 5
+
+    const totalReservations = await reservationsModel.countDocuments({ status: "pending" })
+    const totalPages = Math.ceil(totalReservations / pageSize)
+
+    const pendingReservations = await reservationsModel
+      .find({ status: "pending" })
+      .populate("meeting_rooms")
+      .populate("users")
+      .skip((page - 1) * pageSize)
+      .limit(pageSize)
+
+    res.status(200).json({
+      reservations: pendingReservations,
+      totalPages: totalPages
+    })
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    })
+  }
+}
+
+const handleStateReservation = async (req, res) => {
+  try {
+    const { id } = req.params
+    const { state } = req.body
+    if (![1, 0].includes(state)) {
+      return res.status(400).json({
+        message: "Invalid state"
+      })
+    }
+    let reservation
+    const options = { day: "2-digit", month: "2-digit", year: "numeric" }
+    if (state === 1) {
+      reservation = await reservationsModel.findByIdAndUpdate(id, { status: "confirmed" })
+      const startDate = new Date(reservation.start_date).toLocaleDateString("en-GB", options)
+      const endDate = new Date(reservation.end_date).toLocaleDateString("en-GB", options)
+      sendEmailToUserAfterChangeState(reservation.users, state, reservation.meeting_rooms, `${startDate} - ${endDate}`)
+      res.status(200).json({
+        message: "Reservation approved"
+      })
+    } else {
+      reservation = await reservationsModel.findByIdAndUpdate(id, { status: "rejected" })
+      const startDate = new Date(reservation.start_date).toLocaleDateString("en-GB", options)
+      const endDate = new Date(reservation.end_date).toLocaleDateString("en-GB", options)
+      sendEmailToUserAfterChangeState(reservation.users, state, reservation.meeting_rooms, `${startDate} - ${endDate}`)
+      res.status(200).json({
+        message: "Reservation rejected"
+      })
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: error
+    })
+  }
+}
+
+const sendEmailToUserAfterChangeState = async (userId, state, roomId, reservationRange) => {
+  try {
+    const user = await usersModel.findById(userId)
+    const room = await meetingRoomModel.findById(roomId)
+    const emailSubject = "Reservation State"
+    const htmlTemplatePath = path.join(__dirname, "../views", "reservation_state.html")
+    const htmlTemplate = fs.readFileSync(htmlTemplatePath, "utf-8")
+    let text
+    if (state === 1) {
+      text = `Your reservation has been approved at ${room.name} ranging from ${reservationRange}`
+    } else {
+      text = `Your reservation has been rejected at ${room.name} ranging from ${reservationRange}`
+    }
+    const htmlContent = htmlTemplate.replace("reservationState", text)
+    const emailSent = await sendEmailService(user.email, emailSubject, htmlContent)
+    return emailSent ? true : false
+  } catch (error) {
+    console.error("Error sending email to user after reservation state change", error)
+    return false
+  }
+}
+
 module.exports = {
   saveReservation,
-  getReservedDates
+  getReservedDates,
+  listPendingReservations,
+  handleStateReservation
 }
