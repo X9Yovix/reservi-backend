@@ -5,6 +5,7 @@ const sendEmailService = require("../configs/nodemailer")
 const fs = require("fs")
 const path = require("path")
 
+//-------------------------------------------- ADMINISTRATOR --------------------------------------------
 const saveReservation = async (req, res) => {
   try {
     const { participants, additional_info, meeting_rooms, users } = req.body
@@ -158,9 +159,84 @@ const sendEmailToUserAfterChangeState = async (userId, state, roomId, reservatio
   }
 }
 
+//-------------------------------------------- USER --------------------------------------------
+
+const listReservationsAuthenticatedUser = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1
+    const pageSize = parseInt(req.query.pageSize) || 5
+    const userId = req.params.id
+    const reservations = await reservationsModel
+      .find({ users: userId })
+      .populate({
+        path: "meeting_rooms",
+        populate: {
+          path: "categories"
+        }
+      })
+      .skip((page - 1) * pageSize)
+      .limit(pageSize)
+
+    const totalReservations = await reservationsModel.countDocuments({ users: userId })
+    const totalPages = Math.ceil(totalReservations / pageSize)
+    res.status(200).json({
+      reservations: reservations,
+      totalPages: totalPages
+    })
+  } catch (error) {
+    res.status(500).json({
+      message: error
+    })
+  }
+}
+
+const cancelReservationRequest = async (req, res) => {
+  try {
+    const { id } = req.params
+    const page = parseInt(req.query.page) || 1
+    const pageSize = parseInt(req.query.pageSize) || 5
+
+    const reservation = await reservationsModel.findById(id)
+    if (!reservation) {
+      return res.status(404).json({
+        message: "Reservation not found"
+      })
+    }
+
+    await reservationsModel.findByIdAndUpdate(id, { status: "canceled" })
+
+    const userId = reservation.users
+    const reservations = await reservationsModel
+      .find({ users: userId })
+      .populate({
+        path: "meeting_rooms",
+        populate: {
+          path: "categories"
+        }
+      })
+      .skip((page - 1) * pageSize)
+      .limit(pageSize)
+
+    const totalReservations = await reservationsModel.countDocuments({ users: userId })
+    const totalPages = Math.ceil(totalReservations / pageSize)
+
+    res.status(200).json({
+      message: "Reservation canceled successfully",
+      reservations: reservations,
+      totalPages: totalPages
+    })
+  } catch (error) {
+    res.status(500).json({
+      message: error
+    })
+  }
+}
+
 module.exports = {
   saveReservation,
   getReservedDates,
   listPendingReservations,
-  handleStateReservation
+  handleStateReservation,
+  listReservationsAuthenticatedUser,
+  cancelReservationRequest
 }

@@ -118,4 +118,48 @@ router.get("/state/pendings", reservationsController.listPendingReservations)
  */
 router.put("/state/decision/:id", reservationsController.handleStateReservation)
 
+/**
+ * @swagger
+ * /reservations/user/{id}:
+ *   get:
+ *     summary: Get user reservations
+ *     description: Retrieve a list of reservations for a specific user
+ *     tags: [Reservations]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: User ID
+ *         schema:
+ *           type: number
+ *     responses:
+ *       200:
+ *         description: Success
+ *       500:
+ *         description: Internal Server Error
+ */
+router.get("/user/:id", reservationsController.listReservationsAuthenticatedUser)
+
+/*
+ * @swagger
+ * /reservations/user/{id}:
+ *   put:
+ *     summary: Cancel reservation request
+ *     description: Update the state of a reservation to canceled
+ *     tags: [Reservations]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Reservation ID
+ *         schema:
+ *           type: number
+ *     responses:
+ *       200:
+ *         description: The reservation state was updated successfully
+ *       500:
+ *         description: Internal Server Error
+ */
+router.put("/user/:id", reservationsController.cancelReservationRequest)
+
 module.exports = router
