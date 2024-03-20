@@ -5,7 +5,6 @@ const sendEmailService = require("../configs/nodemailer")
 const fs = require("fs")
 const path = require("path")
 
-//-------------------------------------------- ADMINISTRATOR --------------------------------------------
 const saveReservation = async (req, res) => {
   try {
     const { participants, additional_info, meeting_rooms, users } = req.body
@@ -75,6 +74,8 @@ const getReservedDates = async (req, res) => {
     })
   }
 }
+
+//-------------------------------------------- ADMINISTRATOR --------------------------------------------
 
 const listPendingReservations = async (req, res) => {
   try {
@@ -232,11 +233,95 @@ const cancelReservationRequest = async (req, res) => {
   }
 }
 
+const updateReservationRequest = async (req, res) => {
+  try {
+    const { id } = req.params
+    const { participants, additional_info, meeting_rooms } = req.body
+    const [start_date, end_date] = req.body.reservation_range
+    const page = parseInt(req.query.page) || 1
+    const pageSize = parseInt(req.query.pageSize) || 5
+
+    const reservation = await reservationsModel.findById(id)
+    if (!reservation) {
+      return res.status(404).json({
+        message: "Reservation not found"
+      })
+    }
+
+    //const today = new Date().setHours(0, 0, 0, 0)
+    const today = new Date()
+    if (new Date(start_date).setHours(0, 0, 0, 0) < today || new Date(end_date).setHours(0, 0, 0, 0) < today) {
+      return res.status(400).json({ message: "Reservation dates cannot be before today's date" })
+    }
+
+    const { start_date: old_start_date, end_date: old_end_date } = reservation
+
+    const existingReservations = await reservationsModel.find({ meeting_rooms: meeting_rooms })
+
+    const overlappingReservation = existingReservations.find((reservation) => {
+      const startDateExisting = new Date(reservation.start_date)
+      const endDateExisting = new Date(reservation.end_date)
+
+      if (
+        (start_date >= startDateExisting && start_date <= endDateExisting) ||
+        (end_date >= startDateExisting && end_date <= endDateExisting) ||
+        (start_date <= startDateExisting && end_date >= endDateExisting)
+      ) {
+        if (
+          (old_start_date >= startDateExisting && old_start_date <= endDateExisting) ||
+          (old_end_date >= startDateExisting && old_end_date <= endDateExisting) ||
+          (old_start_date <= startDateExisting && old_end_date >= endDateExisting)
+        ) {
+          return false
+        }
+        if (reservation.status === "pending" || reservation.status === "confirmed") {
+          return true
+        }
+      }
+      return false
+    })
+
+    if (overlappingReservation) {
+      return res.status(400).json({
+        message: "Selected date range is overlapping with an existing reservation for the same meeting room"
+      })
+    }
+
+    await reservationsModel.findByIdAndUpdate(id, { participants, start_date, end_date, additional_info })
+
+    const userId = reservation.users
+    const reservations = await reservationsModel
+      .find({ users: userId })
+      .populate({
+        path: "meeting_rooms",
+        populate: {
+          path: "categories"
+        }
+      })
+      .skip((page - 1) * pageSize)
+      .limit(pageSize)
+
+    const totalReservations = await reservationsModel.countDocuments({ users: userId })
+    const totalPages = Math.ceil(totalReservations / pageSize)
+
+    res.status(200).json({
+      message: "Reservation updated successfully",
+      reservations: reservations,
+      totalPages: totalPages
+    })
+  } catch (error) {
+    res.status(500).json({
+      message: error
+    })
+  }
+}
+
 module.exports = {
   saveReservation,
   getReservedDates,
   listPendingReservations,
   handleStateReservation,
   listReservationsAuthenticatedUser,
-  cancelReservationRequest
+  cancelReservationRequest,
+  updateReservationRequest
 }

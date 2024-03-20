@@ -90,7 +90,7 @@ router.get("/state/pendings", reservationsController.listPendingReservations)
  * /reservations/state/decision/{id}:
  *   put:
  *     summary: Handle reservation state
- *     description: Update the state of a reservation
+ *     description: Update the state of a reservation from admin panel
  *     tags: [Reservations]
  *     parameters:
  *       - in: path
@@ -145,7 +145,7 @@ router.get("/user/:id", reservationsController.listReservationsAuthenticatedUser
  * /reservations/user/{id}:
  *   put:
  *     summary: Cancel reservation request
- *     description: Update the state of a reservation to canceled
+ *     description: Update the state of a reservation to canceled from user panel
  *     tags: [Reservations]
  *     parameters:
  *       - in: path
@@ -160,6 +160,49 @@ router.get("/user/:id", reservationsController.listReservationsAuthenticatedUser
  *       500:
  *         description: Internal Server Error
  */
-router.put("/user/:id", reservationsController.cancelReservationRequest)
+router.put("/user/cancel/:id", reservationsController.cancelReservationRequest)
+
+/**
+ * @swagger
+ * /reservations/user/update/{id}:
+ *   put:
+ *     summary: Update reservation request
+ *     description: Update a reservation request from user panel
+ *     tags: [Reservations]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Reservation ID
+ *         schema:
+ *           type: number
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               participants:
+ *                 type: number
+ *               reservation_range:
+ *                 type: array
+ *               additional_info:
+ *                 type: string
+ *               meeting_rooms:
+ *                 type: number
+ *               users:
+ *                 type: number
+ *             required:
+ *               - participants
+ *               - reservation_range
+ *               - meeting_rooms
+ *     responses:
+ *       200:
+ *         description: The reservation was updated successfully
+ *       500:
+ *         description: Internal Server Error
+ */
+router.put("/user/update/:id", reservationsController.updateReservationRequest)
 
 module.exports = router
