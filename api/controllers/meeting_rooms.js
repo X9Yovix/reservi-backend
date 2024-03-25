@@ -3,7 +3,7 @@ const materialModel = require("../models/materials")
 const categoryModel = require("../models/categories")
 
 const getAllMeetingRooms = async (req, res) => {
-  const meetingRooms = await meetingRoomModel.find().populate("materials._id")
+  const meetingRooms = await meetingRoomModel.find().populate("materials._id").populate("categories")
   const data = meetingRooms.map((meetingRoom) => meetingRoom.toObject())
   res.status(200).json({
     meeting_rooms: data

@@ -205,4 +205,19 @@ router.put("/user/cancel/:id", reservationsController.cancelReservationRequest)
  */
 router.put("/user/update/:id", reservationsController.updateReservationRequest)
 
+/**
+ * @swagger
+ * /reservations:
+ *  get:
+ *   summary: Get all reservations
+ *   description: Retrieve a list of all reservations
+ *   tags: [Reservations]
+ *   responses:
+ *    200:
+ *      description: Success
+ *   500:
+ *     description: Internal Server Error
+ */
+router.get("/", reservationsController.getAllReservations)
+
 module.exports = router

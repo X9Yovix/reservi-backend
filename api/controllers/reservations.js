@@ -160,6 +160,20 @@ const sendEmailToUserAfterChangeState = async (userId, state, roomId, reservatio
   }
 }
 
+const getAllReservations = async (req, res) => {
+  try {
+    const reservations = await reservationsModel.find()
+    const data = reservations.map((reservation) => reservation.toObject())
+    res.status(200).json({
+      reservations: data
+    })
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    })
+  }
+}
+
 //-------------------------------------------- USER --------------------------------------------
 
 const listReservationsAuthenticatedUser = async (req, res) => {
@@ -323,5 +337,6 @@ module.exports = {
   handleStateReservation,
   listReservationsAuthenticatedUser,
   cancelReservationRequest,
-  updateReservationRequest
+  updateReservationRequest,
+  getAllReservations
 }

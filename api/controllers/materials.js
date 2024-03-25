@@ -1,23 +1,27 @@
 const materialsModel = require("../models/materials")
 
 const getAllMaterials = async (req, res) => {
-  const materials = await materialsModel.find()
-  const data = materials.map((material) => material.toObject())
-  res.status(200).json({
-    materials: data
-  })
+  try {
+    const materials = await materialsModel.find()
+    const data = materials.map((material) => material.toObject())
+    res.status(200).json({
+      materials: data
+    })
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
 }
 
 const saveMaterial = async (req, res) => {
-  const body = req.body
   try {
+    const body = req.body
     const material = new materialsModel({ ...body, availableQuantity: body.totalQuantity })
     await material.save()
     res.status(201).json({
       message: "Material saved successfully"
     })
   } catch (error) {
-    res.status(400).json({ message: error.message })
+    res.status(500).json({ message: error.message })
   }
 }
 
