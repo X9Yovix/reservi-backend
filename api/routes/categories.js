@@ -54,4 +54,85 @@ router.get("/", categoriesController.getAllCategories)
  */
 router.post("/", validate(saveValidationSchema), categoriesController.saveCategory)
 
+/**
+ * @swagger
+ * /categories/{id}:
+ *  get:
+ *    summary: Get a category by ID
+ *    description: Retrieve a category by ID
+ *    tags: [Categories]
+ *    parameters:
+ *      - in: path
+ *        name: id
+ *        required: true
+ *        description: ID of the category to retrieve
+ *        schema:
+ *          type: string
+ *    responses:
+ *      200:
+ *        description: Success
+ *      500:
+ *        description: Internal Server Error
+ */
+router.get("/:id", categoriesController.getCategory)
+
+/**
+ * @swagger
+ * /categories/{id}:
+ *  put:
+ *    summary: Update a category by ID
+ *    description: Update a category by ID
+ *    tags: [Categories]
+ *    parameters:
+ *      - in: path
+ *        name: id
+ *        required: true
+ *        description: ID of the category to update
+ *        schema:
+ *          type: string
+ *    requestBody:
+ *      required: true
+ *      content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              name:
+ *                type: string
+ *              color:
+ *                type: string
+ *    responses:
+ *      200:
+ *        description: Category updated successfully
+ *      400:
+ *        description: Bad request
+ *      404:
+ *        description: Category not found
+ *      500:
+ *        description: Internal Server Error
+ */
+router.put("/:id", categoriesController.updateCategory)
+
+/**
+ * @swagger
+ * /categories/{id}:
+ *  delete:
+ *    summary: Delete a category by ID
+ *    description: Delete a category by ID
+ *    tags: [Categories]
+ *    parameters:
+ *      - in: path
+ *        name: id
+ *        required: true
+ *        description: ID of the category to delete
+ *        schema:
+ *          type: string
+ *    responses:
+ *      200:
+ *        description: Category deleted successfully
+ *      500:
+ *        description: Internal Server Error
+ */
+router.delete("/:id", categoriesController.deleteCategory)
+
 module.exports = router
