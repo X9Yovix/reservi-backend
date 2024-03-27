@@ -135,4 +135,30 @@ router.put("/:id", categoriesController.updateCategory)
  */
 router.delete("/:id", categoriesController.deleteCategory)
 
+/**
+ * @swagger
+ * /categories/method/pagination:
+ * get:
+ *   summary: Get all categories with pagination
+ *   description: Retrieve a list of all categories with pagination
+ *   tags: [Categories]
+ *   parameters:
+ *     - in: query
+ *       name: page
+ *       schema:
+ *         type: number
+ *       description: Page number
+ *     - in: query
+ *       name: pageSize
+ *       schema:
+ *         type: number
+ *       description: Number of items in a page
+ *   responses:
+ *     200:
+ *       description: Success
+ *     500:
+ *       description: Internal Server Error
+ */
+router.get("/method/pagination", categoriesController.getAllCategoriesPagination)
+
 module.exports = router

@@ -2,6 +2,18 @@ const categoryModel = require("../models/categories")
 
 const getAllCategories = async (req, res) => {
   try {
+    const categories = await categoryModel.find()
+    const data = categories.map((category) => category.toObject())
+    res.status(200).json({
+      categories: data
+    })
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+}
+
+const getAllCategoriesPagination = async (req, res) => {
+  try {
     const page = parseInt(req.query.page) || 1
     const pageSize = parseInt(req.query.pageSize) || 10
     const categories = await categoryModel
@@ -9,8 +21,8 @@ const getAllCategories = async (req, res) => {
       .skip((page - 1) * pageSize)
       .limit(pageSize)
 
-    const totalReservations = await categoryModel.countDocuments()
-    const totalPages = Math.ceil(totalReservations / pageSize)
+    const totalCategories = await categoryModel.countDocuments()
+    const totalPages = Math.ceil(totalCategories / pageSize)
 
     res.status(200).json({
       categories: categories,
@@ -47,8 +59,6 @@ const getCategory = async (req, res) => {
 const updateCategory = async (req, res) => {
   try {
     const { id } = req.params
-    const page = parseInt(req.query.page) || 1
-    const pageSize = parseInt(req.query.pageSize) || 5
 
     const category = await categoryModel.findById(id)
     if (!category) {
@@ -59,18 +69,8 @@ const updateCategory = async (req, res) => {
 
     await categoryModel.findByIdAndUpdate(id, req.body)
 
-    const categories = await categoryModel
-      .find()
-      .skip((page - 1) * pageSize)
-      .limit(pageSize)
-
-    const totalReservations = await categoryModel.countDocuments()
-    const totalPages = Math.ceil(totalReservations / pageSize)
-
     res.status(200).json({
-      message: "Category updated successfully",
-      categories: categories,
-      totalPages: totalPages
+      message: "Category updated successfully"
     })
   } catch (error) {
     res.status(500).json({
@@ -97,5 +97,6 @@ module.exports = {
   saveCategory,
   getCategory,
   updateCategory,
-  deleteCategory
+  deleteCategory,
+  getAllCategoriesPagination
 }

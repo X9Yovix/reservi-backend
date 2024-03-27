@@ -40,7 +40,7 @@ const meetingRoomSchema = new mongoose.Schema({
   ],
   materials: [
     {
-      material: {
+      _id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "materials"
       },
