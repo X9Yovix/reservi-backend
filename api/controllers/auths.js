@@ -9,20 +9,32 @@ const path = require("path")
 const register = async (req, res) => {
   try {
     const user = new usersModel({ ...req.body, role: "user" })
-    await user.save()
+    const userSaved = await user.save()
+
+    const tempFilePath = req.file.path
+    const userId = userSaved._id.toString()
+    const destinationDir = path.join(__dirname, "../../", "uploads", "users", userId)
+    const newFilePath = path.join(destinationDir, req.file.filename)
+    if (!fs.existsSync(destinationDir)) {
+      fs.mkdirSync(destinationDir, { recursive: true })
+    }
+    fs.renameSync(tempFilePath, newFilePath)
+
+    const relativeFilePath = path.relative(path.join(__dirname, "../../"), newFilePath)
+    userSaved.avatar = relativeFilePath
+    await userSaved.save()
+
     res.status(200).json({
-      message: "User registered successfully"
+      message: "Account created successfully"
     })
   } catch (error) {
     if (error.code === 11000 && error.keyPattern && error.keyPattern.email) {
-      console.error("Error registering user - Duplicate email", error)
       res.status(400).json({
         error: "Email is already registered"
       })
     } else {
-      console.error("Error registering user", error)
       res.status(500).json({
-        message: error
+        error: error.message
       })
     }
   }
@@ -51,18 +63,18 @@ const login = async (req, res) => {
       { expiresIn: process.env.JWT_EXPIRATION_DATE },
       (err, token) => {
         if (err) {
-          console.error("Error signing token", err)
           return res.status(500).json({
-            message: err
+            error: err
           })
         }
         const userFiltered = {
-          _id: user._id,
           first_name: user.first_name,
           last_name: user.last_name,
           email: user.email,
           address: user.address,
-          phone: user.phone
+          phone: user.phone,
+          birthday: user.birthday,
+          avatar: user.avatar
         }
         return res.status(200).json({
           token: token,
@@ -72,9 +84,8 @@ const login = async (req, res) => {
       }
     )
   } catch (error) {
-    console.error("Error logging in user", error)
     res.status(500).json({
-      message: error
+      error: error.message
     })
   }
 }
@@ -122,13 +133,12 @@ const resetPasswordRequest = async (req, res) => {
       })
     } else {
       return res.status(500).json({
-        message: "Error sending password reset email, try again later"
+        error: "Error sending password reset email, try again later"
       })
     }
   } catch (error) {
-    console.error("Error requesting password reset", error)
     res.status(500).json({
-      message: error
+      error: error.message
     })
   }
 }
@@ -157,16 +167,13 @@ const resetPassword = async (req, res) => {
     }
 
     user.password = password
-
     await resetPasswordEntry.deleteOne()
-
     await user.save()
 
     res.status(200).json({
       message: "Password reset successful"
     })
   } catch (error) {
-    console.error("Error resetting password", error)
     res.status(500).json({
       message: error
     })

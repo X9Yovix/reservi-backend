@@ -6,6 +6,7 @@ const loginValidationSchema = require("../validations/login")
 const registerValidationSchema = require("../validations/register")
 const requestResetPasswordValidationSchema = require("../validations/request_reset_password")
 const resetPasswordValidationSchema = require("../validations/reset_password")
+const upload = require("../middlewares/image_upload")
 
 /**
  * @swagger
@@ -48,7 +49,7 @@ const resetPasswordValidationSchema = require("../validations/reset_password")
  *       500:
  *         description: Internal Server Error
  */
-router.post("/register", validate(registerValidationSchema), authsController.register)
+router.post("/register", upload.single("avatar"), validate(registerValidationSchema), authsController.register)
 
 /**
  * @swagger

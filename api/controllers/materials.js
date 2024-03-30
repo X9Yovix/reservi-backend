@@ -9,7 +9,9 @@ const getAllMaterials = async (req, res) => {
       materials: data
     })
   } catch (error) {
-    res.status(500).json({ message: error.message })
+    res.status(500).json({
+      error: error.message
+    })
   }
 }
 
@@ -19,6 +21,7 @@ const getAllMaterialsPagination = async (req, res) => {
     const pageSize = parseInt(req.query.pageSize) || 10
     const materials = await materialsModel
       .find()
+      .sort({ _id: -1 })
       .skip((page - 1) * pageSize)
       .limit(pageSize)
 
@@ -31,7 +34,7 @@ const getAllMaterialsPagination = async (req, res) => {
     })
   } catch (error) {
     res.status(500).json({
-      message: error
+      error: error.message
     })
   }
 }
@@ -41,11 +44,13 @@ const saveMaterial = async (req, res) => {
     const body = req.body
     const material = new materialsModel({ ...body, availableQuantity: body.totalQuantity })
     await material.save()
-    res.status(201).json({
+    res.status(200).json({
       message: "Material saved successfully"
     })
   } catch (error) {
-    res.status(500).json({ message: error.message })
+    res.status(500).json({
+      error: error.message
+    })
   }
 }
 
@@ -54,7 +59,9 @@ const getMaterial = async (req, res) => {
     const material = await materialsModel.findById(req.params.id)
     res.status(200).json(material)
   } catch (error) {
-    res.status(500).json({ message: error.message })
+    res.status(500).json({
+      error: error.message
+    })
   }
 }
 
@@ -65,7 +72,7 @@ const updateMaterial = async (req, res) => {
     const material = await materialsModel.findById(id)
     if (!material) {
       return res.status(404).json({
-        message: "Material not found"
+        error: "Material not found"
       })
     }
 
@@ -77,7 +84,7 @@ const updateMaterial = async (req, res) => {
     if (newTotalQuantity < existingTotalQuantity) {
       if (availableQuantity < Math.abs(quantityDifference)) {
         return res.status(400).json({
-          message: "Not enough available quantity to reduce the total quantity"
+          error: "Not enough available quantity to reduce the total quantity"
         })
       }
       const newAvailableQuantity = availableQuantity - Math.abs(quantityDifference)
@@ -91,7 +98,7 @@ const updateMaterial = async (req, res) => {
     })
   } catch (error) {
     res.status(500).json({
-      message: error
+      error: error.message
     })
   }
 }
@@ -103,7 +110,7 @@ const updateMaterialState = async (req, res) => {
     const material = await materialsModel.findById(id)
     if (!material) {
       return res.status(404).json({
-        message: "Material not found"
+        error: "Material not found"
       })
     }
 
@@ -114,7 +121,7 @@ const updateMaterialState = async (req, res) => {
     })
   } catch (error) {
     res.status(500).json({
-      message: error
+      error: error.message
     })
   }
 }
@@ -127,7 +134,7 @@ const deleteMaterial = async (req, res) => {
 
     if (data.length > 0) {
       return res.status(400).json({
-        message: "Material is used in a meeting room"
+        error: "Material is used in a meeting room"
       })
     }
     await materialsModel.findByIdAndDelete(id)
@@ -137,7 +144,7 @@ const deleteMaterial = async (req, res) => {
     })
   } catch (error) {
     res.status(500).json({
-      message: error
+      error: error.message
     })
   }
 }

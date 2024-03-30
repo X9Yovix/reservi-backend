@@ -73,8 +73,7 @@ router.post("/", upload.array("images"), meetingRoomsController.saveMeetingRoom)
  *   get:
  *     summary: Get a meeting room
  *     description: Retrieve a meeting room
- *     tags:
- *       - Meeting Rooms
+ *     tags: [Meeting Rooms]
  *     parameters:
  *       - in: path
  *         name: id
@@ -90,5 +89,31 @@ router.post("/", upload.array("images"), meetingRoomsController.saveMeetingRoom)
  *         description: Internal Server Error
  */
 router.get("/:id", meetingRoomsController.getMeetingRoom)
+
+/**
+ * @swagger
+ * /meeting_rooms/method/pagination:
+ * get:
+ *   summary: Get all meeting rooms with pagination
+ *   description: Retrieve a list of all meeting rooms with pagination
+ *   tags: [Meeting Rooms]
+ *   parameters:
+ *     - in: query
+ *       name: page
+ *       schema:
+ *         type: number
+ *       description: Page number
+ *     - in: query
+ *       name: pageSize
+ *       schema:
+ *         type: number
+ *       description: Number of items in a page
+ *   responses:
+ *     200:
+ *       description: Success
+ *     500:
+ *       description: Internal Server Error
+ */
+router.get("/method/pagination", meetingRoomsController.getAllMeetingRoomsPagination)
 
 module.exports = router

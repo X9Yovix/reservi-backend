@@ -8,9 +8,8 @@ const getAllUsers = async (req, res) => {
       users: usersData
     })
   } catch (error) {
-    console.error("Error fetching users", error)
     res.status(500).json({
-      message: error
+      error: error.message
     })
   }
 }

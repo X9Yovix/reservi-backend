@@ -8,7 +8,9 @@ const getAllCategories = async (req, res) => {
       categories: data
     })
   } catch (error) {
-    res.status(500).json({ message: error.message })
+    res.status(500).json({
+      error: error.message
+    })
   }
 }
 
@@ -18,6 +20,7 @@ const getAllCategoriesPagination = async (req, res) => {
     const pageSize = parseInt(req.query.pageSize) || 10
     const categories = await categoryModel
       .find()
+      .sort({ _id: -1 })
       .skip((page - 1) * pageSize)
       .limit(pageSize)
 
@@ -26,11 +29,11 @@ const getAllCategoriesPagination = async (req, res) => {
 
     res.status(200).json({
       categories: categories,
-      totalPages: totalPages
+      total_pages: totalPages
     })
   } catch (error) {
     res.status(500).json({
-      message: error
+      error: error.message
     })
   }
 }
@@ -39,11 +42,13 @@ const saveCategory = async (req, res) => {
   try {
     const category = new categoryModel(req.body)
     await category.save()
-    res.status(201).json({
+    res.status(200).json({
       message: "Category saved successfully"
     })
   } catch (error) {
-    res.status(400).json({ message: error.message })
+    res.status(500).json({
+      error: error.message
+    })
   }
 }
 
@@ -52,7 +57,9 @@ const getCategory = async (req, res) => {
     const category = await categoryModel.findById(req.params.id)
     res.status(200).json(category)
   } catch (error) {
-    res.status(500).json({ message: error.message })
+    res.status(500).json({
+      error: error.message
+    })
   }
 }
 
@@ -63,7 +70,7 @@ const updateCategory = async (req, res) => {
     const category = await categoryModel.findById(id)
     if (!category) {
       return res.status(404).json({
-        message: "Category not found"
+        error: "Category not found"
       })
     }
 
@@ -74,7 +81,7 @@ const updateCategory = async (req, res) => {
     })
   } catch (error) {
     res.status(500).json({
-      message: error
+      error: error.message
     })
   }
 }
@@ -87,7 +94,7 @@ const deleteCategory = async (req, res) => {
     })
   } catch (error) {
     res.status(500).json({
-      message: error
+      error: error.message
     })
   }
 }

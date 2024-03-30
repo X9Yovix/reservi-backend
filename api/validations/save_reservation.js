@@ -14,10 +14,10 @@ const saveReservationValidationSchema = joi.object({
     "string.base": "Additional info must be a string"
   }),
   meeting_rooms: joi.string().required().messages({
-    "string.empty": "Meeting room is a required"
+    "any.required": "Meeting room is a required"
   }),
   users: joi.string().required().messages({
-    "string.empty": "User is a required"
+    "any.required": "User is a required"
   })
 })
 

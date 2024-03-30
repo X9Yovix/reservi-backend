@@ -10,10 +10,36 @@ const saveReservation = async (req, res) => {
     const { participants, additional_info, meeting_rooms, users } = req.body
     const [start_date, end_date] = req.body.reservation_range
 
+    const meetingRoom = await meetingRoomModel.findById(meeting_rooms)
+    if (!meetingRoom) {
+      return res.status(404).json({
+        error: "Meeting room not found"
+      })
+    }
+    if (participants < 1) {
+      return res.status(400).json({
+        error: "Participants must be greater than 0"
+      })
+    }
+
+    if (meetingRoom.capacity < participants) {
+      return res.status(400).json({
+        error: "Participants must be less than or equal to the capacity of the meeting room"
+      })
+    }
+
+    if (meetingRoom.availability == false) {
+      return res.status(400).json({
+        error: "This room is currently unavailable for reservations"
+      })
+    }
+
     //const today = new Date().setHours(0, 0, 0, 0)
     const today = new Date()
     if (new Date(start_date).setHours(0, 0, 0, 0) < today || new Date(end_date).setHours(0, 0, 0, 0) < today) {
-      return res.status(400).json({ message: "Reservation dates cannot be before today's date" })
+      return res.status(400).json({
+        error: "Reservation dates cannot be before today's date"
+      })
     }
 
     const existingReservations = await reservationsModel.find({ meeting_rooms: meeting_rooms })
@@ -36,7 +62,7 @@ const saveReservation = async (req, res) => {
 
     if (overlappingReservation) {
       return res.status(400).json({
-        message: "Selected date range is overlapping with an existing reservation for the same meeting room"
+        error: "Selected date range is overlapping with an existing reservation for the same meeting room"
       })
     }
 
@@ -50,12 +76,12 @@ const saveReservation = async (req, res) => {
     })
     await reservation.save()
 
-    res.status(201).json({
+    res.status(200).json({
       message: "Reservation saved successfully"
     })
   } catch (error) {
     res.status(500).json({
-      message: error
+      error: error.message
     })
   }
 }
@@ -70,7 +96,7 @@ const getReservedDates = async (req, res) => {
     })
   } catch (error) {
     res.status(500).json({
-      message: error
+      error: error.message
     })
   }
 }
@@ -87,6 +113,7 @@ const listPendingReservations = async (req, res) => {
 
     const pendingReservations = await reservationsModel
       .find({ status: "pending" })
+      .sort({ _id: -1 })
       .populate("meeting_rooms")
       .populate("users")
       .skip((page - 1) * pageSize)
@@ -94,11 +121,11 @@ const listPendingReservations = async (req, res) => {
 
     res.status(200).json({
       reservations: pendingReservations,
-      totalPages: totalPages
+      total_pages: totalPages
     })
   } catch (error) {
     res.status(500).json({
-      message: error.message
+      error: error.message
     })
   }
 }
@@ -109,7 +136,7 @@ const handleStateReservation = async (req, res) => {
     const { state } = req.body
     if (![1, 0].includes(state)) {
       return res.status(400).json({
-        message: "Invalid state"
+        error: "Invalid state"
       })
     }
     let reservation
@@ -133,7 +160,7 @@ const handleStateReservation = async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({
-      message: error
+      error: error.message
     })
   }
 }
@@ -155,7 +182,6 @@ const sendEmailToUserAfterChangeState = async (userId, state, roomId, reservatio
     const emailSent = await sendEmailService(user.email, emailSubject, htmlContent)
     return emailSent ? true : false
   } catch (error) {
-    console.error("Error sending email to user after reservation state change", error)
     return false
   }
 }
@@ -169,7 +195,7 @@ const getAllReservations = async (req, res) => {
     })
   } catch (error) {
     res.status(500).json({
-      message: error.message
+      error: error.message
     })
   }
 }
@@ -179,10 +205,11 @@ const getAllReservations = async (req, res) => {
 const listReservationsAuthenticatedUser = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1
-    const pageSize = parseInt(req.query.pageSize) || 5
+    const pageSize = parseInt(req.query.pageSize) || 10
     const userId = req.params.id
     const reservations = await reservationsModel
       .find({ users: userId })
+      .sort({ _id: -1 })
       .populate({
         path: "meeting_rooms",
         populate: {
@@ -196,11 +223,11 @@ const listReservationsAuthenticatedUser = async (req, res) => {
     const totalPages = Math.ceil(totalReservations / pageSize)
     res.status(200).json({
       reservations: reservations,
-      totalPages: totalPages
+      total_pages: totalPages
     })
   } catch (error) {
     res.status(500).json({
-      message: error
+      error: error.message
     })
   }
 }
@@ -208,41 +235,22 @@ const listReservationsAuthenticatedUser = async (req, res) => {
 const cancelReservationRequest = async (req, res) => {
   try {
     const { id } = req.params
-    const page = parseInt(req.query.page) || 1
-    const pageSize = parseInt(req.query.pageSize) || 5
 
     const reservation = await reservationsModel.findById(id)
     if (!reservation) {
       return res.status(404).json({
-        message: "Reservation not found"
+        error: "Reservation not found"
       })
     }
 
     await reservationsModel.findByIdAndUpdate(id, { status: "canceled" })
 
-    const userId = reservation.users
-    const reservations = await reservationsModel
-      .find({ users: userId })
-      .populate({
-        path: "meeting_rooms",
-        populate: {
-          path: "categories"
-        }
-      })
-      .skip((page - 1) * pageSize)
-      .limit(pageSize)
-
-    const totalReservations = await reservationsModel.countDocuments({ users: userId })
-    const totalPages = Math.ceil(totalReservations / pageSize)
-
     res.status(200).json({
-      message: "Reservation canceled successfully",
-      reservations: reservations,
-      totalPages: totalPages
+      message: "Reservation canceled successfully"
     })
   } catch (error) {
     res.status(500).json({
-      message: error
+      error: error.message
     })
   }
 }
@@ -252,20 +260,18 @@ const updateReservationRequest = async (req, res) => {
     const { id } = req.params
     const { participants, additional_info, meeting_rooms } = req.body
     const [start_date, end_date] = req.body.reservation_range
-    const page = parseInt(req.query.page) || 1
-    const pageSize = parseInt(req.query.pageSize) || 5
 
     const reservation = await reservationsModel.findById(id)
     if (!reservation) {
       return res.status(404).json({
-        message: "Reservation not found"
+        error: "Reservation not found"
       })
     }
 
     //const today = new Date().setHours(0, 0, 0, 0)
     const today = new Date()
     if (new Date(start_date).setHours(0, 0, 0, 0) < today || new Date(end_date).setHours(0, 0, 0, 0) < today) {
-      return res.status(400).json({ message: "Reservation dates cannot be before today's date" })
+      return res.status(400).json({ error: "Reservation dates cannot be before today's date" })
     }
 
     const { start_date: old_start_date, end_date: old_end_date } = reservation
@@ -297,35 +303,18 @@ const updateReservationRequest = async (req, res) => {
 
     if (overlappingReservation) {
       return res.status(400).json({
-        message: "Selected date range is overlapping with an existing reservation for the same meeting room"
+        error: "Selected date range is overlapping with an existing reservation for the same meeting room"
       })
     }
 
     await reservationsModel.findByIdAndUpdate(id, { participants, start_date, end_date, additional_info })
 
-    const userId = reservation.users
-    const reservations = await reservationsModel
-      .find({ users: userId })
-      .populate({
-        path: "meeting_rooms",
-        populate: {
-          path: "categories"
-        }
-      })
-      .skip((page - 1) * pageSize)
-      .limit(pageSize)
-
-    const totalReservations = await reservationsModel.countDocuments({ users: userId })
-    const totalPages = Math.ceil(totalReservations / pageSize)
-
     res.status(200).json({
-      message: "Reservation updated successfully",
-      reservations: reservations,
-      totalPages: totalPages
+      message: "Reservation updated successfully"
     })
   } catch (error) {
     res.status(500).json({
-      message: error
+      error: error.message
     })
   }
 }

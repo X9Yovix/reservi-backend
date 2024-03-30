@@ -1,7 +1,6 @@
 const validation = (schema) => async (req, res, next) => {
-  const body = req.body
-
   try {
+    const body = req.body
     await schema.validateAsync(body)
     next()
   } catch (error) {

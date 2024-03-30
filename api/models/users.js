@@ -32,6 +32,9 @@ const usersSchema = new mongoose.Schema({
     type: Date,
     required: true
   },
+  avatar: {
+    type: String
+  },
   role: {
     type: String,
     required: true
