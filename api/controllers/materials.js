@@ -30,7 +30,7 @@ const getAllMaterialsPagination = async (req, res) => {
 
     res.status(200).json({
       materials: materials,
-      totalPages: totalPages
+      total_pages: totalPages
     })
   } catch (error) {
     res.status(500).json({

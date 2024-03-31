@@ -3,6 +3,7 @@ const router = express.Router()
 const categoriesController = require("../controllers/categories")
 const validate = require("../middlewares/validation")
 const saveValidationSchema = require("../validations/save_category")
+const auth = require("../middlewares/auths")
 
 /**
  * @swagger
@@ -24,7 +25,7 @@ const saveValidationSchema = require("../validations/save_category")
  *     500:
  *       description: Internal Server Error
  */
-router.get("/", categoriesController.getAllCategories)
+router.get("/", auth.isAdmin, categoriesController.getAllCategories)
 
 /**
  * @swagger
@@ -52,7 +53,7 @@ router.get("/", categoriesController.getAllCategories)
  *      500:
  *        description: Internal Server Error
  */
-router.post("/", validate(saveValidationSchema), categoriesController.saveCategory)
+router.post("/", auth.isAdmin, validate(saveValidationSchema), categoriesController.saveCategory)
 
 /**
  * @swagger
@@ -74,7 +75,7 @@ router.post("/", validate(saveValidationSchema), categoriesController.saveCatego
  *      500:
  *        description: Internal Server Error
  */
-router.get("/:id", categoriesController.getCategory)
+router.get("/:id", auth.isAdmin, categoriesController.getCategory)
 
 /**
  * @swagger
@@ -111,7 +112,7 @@ router.get("/:id", categoriesController.getCategory)
  *      500:
  *        description: Internal Server Error
  */
-router.put("/:id", categoriesController.updateCategory)
+router.put("/:id", auth.isAdmin, categoriesController.updateCategory)
 
 /**
  * @swagger
@@ -133,7 +134,7 @@ router.put("/:id", categoriesController.updateCategory)
  *      500:
  *        description: Internal Server Error
  */
-router.delete("/:id", categoriesController.deleteCategory)
+router.delete("/:id", auth.isAdmin, categoriesController.deleteCategory)
 
 /**
  * @swagger
@@ -159,6 +160,6 @@ router.delete("/:id", categoriesController.deleteCategory)
  *     500:
  *       description: Internal Server Error
  */
-router.get("/method/pagination", categoriesController.getAllCategoriesPagination)
+router.get("/method/pagination", auth.isAdmin, categoriesController.getAllCategoriesPagination)
 
 module.exports = router

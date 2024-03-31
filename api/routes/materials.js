@@ -3,6 +3,7 @@ const router = express.Router()
 const materialsController = require("../controllers/materials")
 const validate = require("../middlewares/validation")
 const saveValidationSchema = require("../validations/save_material")
+const auth = require("../middlewares/auths")
 
 /**
  * @swagger
@@ -24,7 +25,7 @@ const saveValidationSchema = require("../validations/save_material")
  *     500:
  *       description: Internal Server Error
  */
-router.get("/", materialsController.getAllMaterials)
+router.get("/", auth.isAdmin, materialsController.getAllMaterials)
 
 /**
  * @swagger
@@ -50,7 +51,7 @@ router.get("/", materialsController.getAllMaterials)
  *     500:
  *       description: Internal Server Error
  */
-router.get("/method/pagination", materialsController.getAllMaterialsPagination)
+router.get("/method/pagination", auth.isAdmin, materialsController.getAllMaterialsPagination)
 
 /**
  * @swagger
@@ -80,7 +81,7 @@ router.get("/method/pagination", materialsController.getAllMaterialsPagination)
  *      500:
  *        description: Internal Server Error
  */
-router.post("/", validate(saveValidationSchema), materialsController.saveMaterial)
+router.post("/", auth.isAdmin, validate(saveValidationSchema), materialsController.saveMaterial)
 
 /**
  * @swagger
@@ -104,7 +105,7 @@ router.post("/", validate(saveValidationSchema), materialsController.saveMateria
  *       404:
  *         description: Material not found
  */
-router.get("/:id", materialsController.getMaterial)
+router.get("/:id", auth.isAdmin, materialsController.getMaterial)
 
 /**
  * @swagger
@@ -141,7 +142,7 @@ router.get("/:id", materialsController.getMaterial)
  *       404:
  *         description: Material not found
  */
-router.put("/:id", materialsController.updateMaterial)
+router.put("/:id", auth.isAdmin, materialsController.updateMaterial)
 
 /**
  * @swagger
@@ -165,7 +166,7 @@ router.put("/:id", materialsController.updateMaterial)
  *       404:
  *         description: Material not found
  */
-router.delete("/:id", materialsController.deleteMaterial)
+router.delete("/:id", auth.isAdmin, materialsController.deleteMaterial)
 
 /**
  * @swagger
@@ -198,6 +199,6 @@ router.delete("/:id", materialsController.deleteMaterial)
  *       404:
  *         description: Material not found
  */
-router.put("/state/:id", materialsController.updateMaterialState)
+router.put("/state/:id", auth.isAdmin, materialsController.updateMaterialState)
 
 module.exports = router

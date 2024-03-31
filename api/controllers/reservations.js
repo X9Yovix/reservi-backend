@@ -101,8 +101,6 @@ const getReservedDates = async (req, res) => {
   }
 }
 
-//-------------------------------------------- ADMINISTRATOR --------------------------------------------
-
 const listPendingReservations = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1
@@ -134,7 +132,7 @@ const handleStateReservation = async (req, res) => {
   try {
     const { id } = req.params
     const { state } = req.body
-    if (![1, 0].includes(state)) {
+    if (![2, 1, 0].includes(state)) {
       return res.status(400).json({
         error: "Invalid state"
       })
@@ -149,13 +147,23 @@ const handleStateReservation = async (req, res) => {
       res.status(200).json({
         message: "Reservation approved"
       })
-    } else {
+    } else if (state === 0) {
       reservation = await reservationsModel.findByIdAndUpdate(id, { status: "rejected" })
       const startDate = new Date(reservation.start_date).toLocaleDateString("en-GB", options)
       const endDate = new Date(reservation.end_date).toLocaleDateString("en-GB", options)
       sendEmailToUserAfterChangeState(reservation.users, state, reservation.meeting_rooms, `${startDate} - ${endDate}`)
       res.status(200).json({
         message: "Reservation rejected"
+      })
+    }
+    //user
+    else if (state === 2) {
+      reservation = await reservationsModel.findByIdAndUpdate(id, { status: "canceled" })
+      const startDate = new Date(reservation.start_date).toLocaleDateString("en-GB", options)
+      const endDate = new Date(reservation.end_date).toLocaleDateString("en-GB", options)
+      sendEmailToUserAfterChangeState(reservation.users, state, reservation.meeting_rooms, `${startDate} - ${endDate}`)
+      res.status(200).json({
+        message: "Reservation canceled"
       })
     }
   } catch (error) {
@@ -175,8 +183,12 @@ const sendEmailToUserAfterChangeState = async (userId, state, roomId, reservatio
     let text
     if (state === 1) {
       text = `Your reservation has been approved at ${room.name} ranging from ${reservationRange}`
-    } else {
+    } else if (state === 0) {
       text = `Your reservation has been rejected at ${room.name} ranging from ${reservationRange}`
+    }
+    //user
+    else if (state === 2) {
+      text = `Your reservation has been canceled at ${room.name} ranging from ${reservationRange}`
     }
     const htmlContent = htmlTemplate.replace("reservationState", text)
     const emailSent = await sendEmailService(user.email, emailSubject, htmlContent)
@@ -200,8 +212,6 @@ const getAllReservations = async (req, res) => {
   }
 }
 
-//-------------------------------------------- USER --------------------------------------------
-
 const listReservationsAuthenticatedUser = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1
@@ -224,29 +234,6 @@ const listReservationsAuthenticatedUser = async (req, res) => {
     res.status(200).json({
       reservations: reservations,
       total_pages: totalPages
-    })
-  } catch (error) {
-    res.status(500).json({
-      error: error.message
-    })
-  }
-}
-
-const cancelReservationRequest = async (req, res) => {
-  try {
-    const { id } = req.params
-
-    const reservation = await reservationsModel.findById(id)
-    if (!reservation) {
-      return res.status(404).json({
-        error: "Reservation not found"
-      })
-    }
-
-    await reservationsModel.findByIdAndUpdate(id, { status: "canceled" })
-
-    res.status(200).json({
-      message: "Reservation canceled successfully"
     })
   } catch (error) {
     res.status(500).json({
@@ -325,7 +312,6 @@ module.exports = {
   listPendingReservations,
   handleStateReservation,
   listReservationsAuthenticatedUser,
-  cancelReservationRequest,
   updateReservationRequest,
   getAllReservations
 }

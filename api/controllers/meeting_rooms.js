@@ -130,9 +130,46 @@ const getAllMeetingRoomsPagination = async (req, res) => {
     const totalMeetingRooms = await meetingRoomModel.countDocuments()
     const totalPages = Math.ceil(totalMeetingRooms / pageSize)
 
+    const meetingRoomsWithMaterials = await Promise.all(
+      meetingRooms.map(async (meetingRoom) => {
+        const materialsDetails = await Promise.all(
+          meetingRoom.materials.map(async (material) => {
+            return await materialModel.findOne({ _id: material._id })
+          })
+        )
+        return {
+          ...meetingRoom.toObject(),
+          materialsDetails: materialsDetails
+        }
+      })
+    )
+
     res.status(200).json({
-      meeting_rooms: meetingRooms,
+      meeting_rooms: meetingRoomsWithMaterials,
       total_pages: totalPages
+    })
+  } catch (error) {
+    res.status(500).json({
+      error: error.message
+    })
+  }
+}
+
+const updateMeetingRoomState = async (req, res) => {
+  try {
+    const { id } = req.params
+    const { availability } = req.body
+    const meetingRoom = await meetingRoomModel.findById(id)
+    if (!meetingRoom) {
+      return res.status(404).json({
+        error: "Meeting Room not found"
+      })
+    }
+
+    await meetingRoomModel.findByIdAndUpdate(id, { availability: availability })
+
+    res.status(200).json({
+      message: "Meeting Room state updated successfully"
     })
   } catch (error) {
     res.status(500).json({
@@ -145,5 +182,6 @@ module.exports = {
   getAllMeetingRooms,
   saveMeetingRoom,
   getMeetingRoom,
-  getAllMeetingRoomsPagination
+  getAllMeetingRoomsPagination,
+  updateMeetingRoomState
 }

@@ -3,6 +3,7 @@ const router = express.Router()
 const reservationsController = require("../controllers/reservations")
 const validate = require("../middlewares/validation")
 const saveValidationSchema = require("../validations/save_reservation")
+const auth = require("../middlewares/auths")
 
 /**
  * @swagger
@@ -116,7 +117,7 @@ router.get("/state/pendings", reservationsController.listPendingReservations)
  *       500:
  *         description: Internal Server Error
  */
-router.put("/state/decision/:id", reservationsController.handleStateReservation)
+router.put("/state/decision/:id", auth.isAdmin, reservationsController.handleStateReservation)
 
 /**
  * @swagger
@@ -139,28 +140,6 @@ router.put("/state/decision/:id", reservationsController.handleStateReservation)
  *         description: Internal Server Error
  */
 router.get("/user/:id", reservationsController.listReservationsAuthenticatedUser)
-
-/*
- * @swagger
- * /reservations/user/{id}:
- *   put:
- *     summary: Cancel reservation request
- *     description: Update the state of a reservation to canceled from user panel
- *     tags: [Reservations]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: Reservation ID
- *         schema:
- *           type: number
- *     responses:
- *       200:
- *         description: The reservation state was updated successfully
- *       500:
- *         description: Internal Server Error
- */
-router.put("/user/cancel/:id", reservationsController.cancelReservationRequest)
 
 /**
  * @swagger
@@ -218,6 +197,6 @@ router.put("/user/update/:id", reservationsController.updateReservationRequest)
  *   500:
  *     description: Internal Server Error
  */
-router.get("/", reservationsController.getAllReservations)
+router.get("/", auth.isAdmin, reservationsController.getAllReservations)
 
 module.exports = router

@@ -2,6 +2,7 @@ const express = require("express")
 const router = express.Router()
 const meetingRoomsController = require("../controllers/meeting_rooms")
 const upload = require("../middlewares/image_upload")
+const auth = require("../middlewares/auths")
 
 /**
  * @swagger
@@ -23,7 +24,7 @@ const upload = require("../middlewares/image_upload")
  *      500:
  *        description: Internal Server Error
  */
-router.get("/", meetingRoomsController.getAllMeetingRooms)
+router.get("/", auth.isAdmin, meetingRoomsController.getAllMeetingRooms)
 
 /**
  * @swagger
@@ -65,7 +66,7 @@ router.get("/", meetingRoomsController.getAllMeetingRooms)
  *      500:
  *        description: Internal Server Error
  */
-router.post("/", upload.array("images"), meetingRoomsController.saveMeetingRoom)
+router.post("/", auth.isAdmin, upload.array("images"), meetingRoomsController.saveMeetingRoom)
 
 /**
  * @swagger
@@ -88,7 +89,7 @@ router.post("/", upload.array("images"), meetingRoomsController.saveMeetingRoom)
  *       500:
  *         description: Internal Server Error
  */
-router.get("/:id", meetingRoomsController.getMeetingRoom)
+router.get("/:id", auth.isAdmin, meetingRoomsController.getMeetingRoom)
 
 /**
  * @swagger
@@ -115,5 +116,37 @@ router.get("/:id", meetingRoomsController.getMeetingRoom)
  *       description: Internal Server Error
  */
 router.get("/method/pagination", meetingRoomsController.getAllMeetingRoomsPagination)
+
+/**
+ * @swagger
+ * /meeting_rooms/state/{id}:
+ *   put:
+ *     summary: Update meeting room state
+ *     description: Update meeting room state
+ *     tags: [Meeting Rooms]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               availability:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Success
+ *       400:
+ *         description: Bad Request
+ *       500:
+ *         description: Internal Server Error
+ */
+router.put("/state/:id", auth.isAdmin, meetingRoomsController.updateMeetingRoomState)
 
 module.exports = router
