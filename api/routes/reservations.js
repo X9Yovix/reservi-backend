@@ -3,6 +3,7 @@ const router = express.Router()
 const reservationsController = require("../controllers/reservations")
 const validate = require("../middlewares/validation")
 const saveValidationSchema = require("../validations/save_reservation")
+const updateValidationSchema = require("../validations/update_reservation")
 const auth = require("../middlewares/auths")
 
 /**
@@ -182,7 +183,7 @@ router.get("/user/:id", reservationsController.listReservationsAuthenticatedUser
  *       500:
  *         description: Internal Server Error
  */
-router.put("/user/update/:id", reservationsController.updateReservationRequest)
+router.put("/user/update/:id", validate(updateValidationSchema), reservationsController.updateReservationRequest)
 
 /**
  * @swagger

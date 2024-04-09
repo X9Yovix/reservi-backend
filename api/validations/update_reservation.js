@@ -1,6 +1,6 @@
 const joi = require("joi")
 
-const saveReservationValidationSchema = joi.object({
+const updateReservationValidationSchema = joi.object({
   participants: joi.number().required().messages({
     "number.base": "Participants must be a number",
     "any.required": "Participants is required"
@@ -15,10 +15,7 @@ const saveReservationValidationSchema = joi.object({
   }),
   meeting_rooms: joi.string().required().messages({
     "any.required": "Meeting room is a required"
-  }),
-  users: joi.string().required().messages({
-    "any.required": "User is a required"
   })
 })
 
-module.exports = saveReservationValidationSchema
+module.exports = updateReservationValidationSchema

@@ -1,6 +1,7 @@
 const express = require("express")
 const router = express.Router()
 const usersController = require("../controllers/users")
+const auth = require("../middlewares/auths")
 
 /**
  * @swagger
@@ -22,6 +23,21 @@ const usersController = require("../controllers/users")
  *       500:
  *         description: Internal Server Error
  */
-router.get("/", usersController.getAllUsers)
+router.get("/", auth.isAdmin, usersController.getAllUsers)
+
+/**
+ * @swagger
+ * /users/count:
+ *   get:
+ *     summary: Count users
+ *     description: Retrieve the total number of users
+ *     tags: [Clients]
+ *     responses:
+ *       200:
+ *         description: Success
+ *       500:
+ *         description: Internal Server Error
+ */
+router.get("/count", auth.isAdmin, usersController.countUsers)
 
 module.exports = router

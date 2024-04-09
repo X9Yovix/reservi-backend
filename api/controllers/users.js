@@ -14,6 +14,19 @@ const getAllUsers = async (req, res) => {
   }
 }
 
+const countUsers = async (req, res) => {
+  try {
+    const users = await usersModel.countDocuments()
+    res.status(200).json({
+      count_users: users
+    })
+  } catch (error) {
+    res.status(500).json({
+      error: error.message
+    })
+  }
+}
 module.exports = {
-  getAllUsers
+  getAllUsers,
+  countUsers
 }

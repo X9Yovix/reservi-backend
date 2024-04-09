@@ -2,6 +2,9 @@ const express = require("express")
 const router = express.Router()
 const meetingRoomsController = require("../controllers/meeting_rooms")
 const upload = require("../middlewares/image_upload")
+const validate = require("../middlewares/validation")
+const updateValidationSchema = require("../validations/update_meeting_room")
+const saveValidationSchema = require("../validations/save_meeting_room")
 const auth = require("../middlewares/auths")
 
 /**
@@ -66,7 +69,7 @@ router.get("/", auth.isAdmin, meetingRoomsController.getAllMeetingRooms)
  *      500:
  *        description: Internal Server Error
  */
-router.post("/", auth.isAdmin, upload.array("images"), meetingRoomsController.saveMeetingRoom)
+router.post("/", auth.isAdmin, upload.array("images"), validate(saveValidationSchema), meetingRoomsController.saveMeetingRoom)
 
 /**
  * @swagger
@@ -148,5 +151,53 @@ router.get("/method/pagination", meetingRoomsController.getAllMeetingRoomsPagina
  *         description: Internal Server Error
  */
 router.put("/state/:id", auth.isAdmin, meetingRoomsController.updateMeetingRoomState)
+
+/**
+ * @swagger
+ * /meeting_rooms/{id}:
+ *   put:
+ *     summary: Update a meeting room
+ *     description: Update a meeting room
+ *     tags: [Meeting Rooms]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               capacity:
+ *                 type: integer
+ *               length:
+ *                 type: integer
+ *               width:
+ *                 type: integer
+ *               height:
+ *                 type: integer
+ *               materials:
+ *                 type: string
+ *               images:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       200:
+ *         description: Meeting room updated successfully
+ *       400:
+ *         description: Bad Request
+ *       500:
+ *         description: Internal Server Error
+ */
+router.put("/:id", auth.isAdmin, upload.array("images"), validate(updateValidationSchema), meetingRoomsController.updateMeetingRoom)
 
 module.exports = router
