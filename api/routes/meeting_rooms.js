@@ -122,6 +122,29 @@ router.get("/method/pagination", meetingRoomsController.getAllMeetingRoomsPagina
 
 /**
  * @swagger
+ * /meeting_rooms/{id}:
+ *   delete:
+ *     summary: Delete a meeting room
+ *     description: Delete a meeting room
+ *     tags: [Meeting Rooms]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Meeting room deleted successfully
+ *       404:
+ *         description: Meeting room not found
+ *       500:
+ *         description: Internal Server Error
+ */
+router.delete("/:id", auth.isAdmin, meetingRoomsController.deleteMeetingRoom)
+
+/**
+ * @swagger
  * /meeting_rooms/state/{id}:
  *   put:
  *     summary: Update meeting room state
@@ -199,5 +222,54 @@ router.put("/state/:id", auth.isAdmin, meetingRoomsController.updateMeetingRoomS
  *         description: Internal Server Error
  */
 router.put("/:id", auth.isAdmin, upload.array("images"), validate(updateValidationSchema), meetingRoomsController.updateMeetingRoom)
+
+/**
+ * @swagger
+ * /meeting_rooms/archive/method/pagination:
+ *   get:
+ *     summary: Get all archived meeting rooms with pagination
+ *     description: Retrieve a list of all archived meeting rooms with pagination
+ *     tags: [Meeting Rooms]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: number
+ *         description: Page number
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: number
+ *         description: Number of items in a page
+ *     responses:
+ *       200:
+ *         description: Success
+ *       500:
+ *         description: Internal Server Error
+ */
+router.get("/archive/method/pagination", auth.isAdmin, meetingRoomsController.getArchivedMeetingRoomsPagination)
+
+/**
+ * @swagger
+ * /meeting_rooms/{id}/undo:
+ *   patch:
+ *     summary: Undo meeting room
+ *     description: Undo meeting room
+ *     tags: [Meeting Rooms]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Meeting room restored successfully
+ *       404:
+ *         description: Meeting room not found
+ *       500:
+ *         description: Internal Server Error
+ */
+router.patch("/:id/undo", auth.isAdmin, meetingRoomsController.undoMeetingRoom)
 
 module.exports = router

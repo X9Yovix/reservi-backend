@@ -34,6 +34,12 @@ const saveReservation = async (req, res) => {
       })
     }
 
+    if (meetingRoom.is_deleted == true) {
+      return res.status(400).json({
+        error: "This room has been deleted"
+      })
+    }
+
     //const today = new Date().setHours(0, 0, 0, 0)
     const today = new Date()
     if (new Date(start_date).setHours(0, 0, 0, 0) < today || new Date(end_date).setHours(0, 0, 0, 0) < today) {

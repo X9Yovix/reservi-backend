@@ -49,7 +49,11 @@ const meetingRoomSchema = new mongoose.Schema({
         required: true
       }
     }
-  ]
+  ],
+  is_deleted: {
+    type: Boolean,
+    default: false
+  }
 })
 
 module.exports = mongoose.model("meeting_rooms", meetingRoomSchema)

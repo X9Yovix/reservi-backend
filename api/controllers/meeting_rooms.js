@@ -122,12 +122,12 @@ const getAllMeetingRoomsPagination = async (req, res) => {
     const page = parseInt(req.query.page) || 1
     const pageSize = parseInt(req.query.pageSize) || 6
     const meetingRooms = await meetingRoomModel
-      .find()
+      .find({ is_deleted: false })
       .sort({ _id: -1 })
       .skip((page - 1) * pageSize)
       .limit(pageSize)
 
-    const totalMeetingRooms = await meetingRoomModel.countDocuments()
+    const totalMeetingRooms = await meetingRoomModel.countDocuments({ is_deleted: false })
     const totalPages = Math.ceil(totalMeetingRooms / pageSize)
 
     const meetingRoomsWithMaterials = await Promise.all(
@@ -310,11 +310,79 @@ const updateMeetingRoom = async (req, res) => {
   }
 }
 
+const deleteMeetingRoom = async (req, res) => {
+  try {
+    const { id } = req.params
+
+    const meetingRoom = await meetingRoomModel.findById(id)
+    if (!meetingRoom) {
+      return res.status(404).json({
+        error: "Meeting Room not found"
+      })
+    }
+    await meetingRoomModel.findByIdAndUpdate(id, { is_deleted: true })
+    res.status(200).json({
+      message: "Meeting Room deleted successfully"
+    })
+  } catch (error) {
+    res.status(500).json({
+      error: error.message
+    })
+  }
+}
+
+const getArchivedMeetingRoomsPagination = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1
+    const pageSize = parseInt(req.query.pageSize) || 6
+    const meetingRooms = await meetingRoomModel
+      .find({ is_deleted: true })
+      .sort({ _id: -1 })
+      .skip((page - 1) * pageSize)
+      .limit(pageSize)
+
+    const totalMeetingRooms = await meetingRoomModel.countDocuments({ is_deleted: true })
+    const totalPages = Math.ceil(totalMeetingRooms / pageSize)
+
+    res.status(200).json({
+      meeting_rooms: meetingRooms,
+      total_pages: totalPages
+    })
+  } catch (error) {
+    res.status(500).json({
+      error: error.message
+    })
+  }
+}
+
+const undoMeetingRoom = async (req, res) => {
+  try {
+    const { id } = req.params
+    const meetingRoom = await meetingRoomModel.findById(id)
+    if (!meetingRoom) {
+      return res.status(404).json({
+        error: "Meeting Room not found"
+      })
+    }
+    await meetingRoomModel.findByIdAndUpdate(id, { is_deleted: false })
+    res.status(200).json({
+      message: "Meeting Room restored successfully"
+    })
+  } catch (error) {
+    res.status(500).json({
+      error: error.message
+    })
+  }
+}
+
 module.exports = {
   getAllMeetingRooms,
   saveMeetingRoom,
   getMeetingRoom,
   getAllMeetingRoomsPagination,
   updateMeetingRoomState,
-  updateMeetingRoom
+  updateMeetingRoom,
+  deleteMeetingRoom,
+  getArchivedMeetingRoomsPagination,
+  undoMeetingRoom
 }
