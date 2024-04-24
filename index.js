@@ -34,7 +34,8 @@ connectDB()
 app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerSpec))
 app.use("/uploads", express.static("uploads"))
 
-app.use(cors(corsOptions))
+//app.use(cors(corsOptions))
+app.use(cors())
 app.use(express.json())
 
 const apiRouter = express.Router()
