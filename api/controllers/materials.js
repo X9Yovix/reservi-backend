@@ -80,18 +80,23 @@ const updateMaterial = async (req, res) => {
     const availableQuantity = material.availableQuantity
     const newTotalQuantity = req.body.totalQuantity
 
-    const quantityDifference = newTotalQuantity - existingTotalQuantity
-    if (newTotalQuantity < existingTotalQuantity) {
-      if (availableQuantity < Math.abs(quantityDifference)) {
+    if (newTotalQuantity > existingTotalQuantity) {
+      await materialsModel.findByIdAndUpdate(id, {
+        description: req.body.description,
+        availability: req.body.availability,
+        totalQuantity: newTotalQuantity
+      })
+    } else {
+      if (availableQuantity > newTotalQuantity) {
         return res.status(400).json({
           error: "Not enough available quantity to reduce the total quantity"
         })
       }
-      const newAvailableQuantity = availableQuantity - Math.abs(quantityDifference)
-      await materialsModel.findByIdAndUpdate(id, { ...req.body, availableQuantity: newAvailableQuantity })
-    } else {
-      const newAvailableQuantity = Math.abs(quantityDifference) + material.availableQuantity
-      await materialsModel.findByIdAndUpdate(id, { ...req.body, availableQuantity: newAvailableQuantity })
+      await materialsModel.findByIdAndUpdate(id, {
+        description: req.body.description,
+        availability: req.body.availability,
+        totalQuantity: newTotalQuantity
+      })
     }
     res.status(200).json({
       message: "Material updated successfully"
