@@ -53,11 +53,11 @@ const saveReservation = async (req, res) => {
     const overlappingReservation = existingReservations.find((reservation) => {
       const startDateExisting = new Date(reservation.start_date)
       const endDateExisting = new Date(reservation.end_date)
-
+    
       if (
-        (start_date >= startDateExisting && start_date <= endDateExisting) ||
-        (end_date >= startDateExisting && end_date <= endDateExisting) ||
-        (start_date <= startDateExisting && end_date >= endDateExisting)
+        (new Date(start_date) >= startDateExisting && new Date(start_date) <= endDateExisting) ||
+        (new Date(end_date) >= startDateExisting && new Date(end_date) <= endDateExisting) ||
+        (new Date(start_date) <= startDateExisting && new Date(end_date) >= endDateExisting)
       ) {
         if (reservation.status === "pending" || reservation.status === "confirmed") {
           return true

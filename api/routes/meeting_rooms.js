@@ -92,7 +92,7 @@ router.post("/", auth.isAdmin, upload.array("images"), validate(saveValidationSc
  *       500:
  *         description: Internal Server Error
  */
-router.get("/:id", auth.isAdmin, meetingRoomsController.getMeetingRoom)
+router.get("/:id", meetingRoomsController.getMeetingRoom)
 
 /**
  * @swagger
