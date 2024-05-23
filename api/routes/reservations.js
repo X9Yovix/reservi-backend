@@ -122,6 +122,39 @@ router.put("/state/decision/:id", auth.isAdmin, reservationsController.handleSta
 
 /**
  * @swagger
+ * /reservations/state/decision/client/{id}:
+ *   put:
+ *     summary: Handle reservation state
+ *     description: Update the state of a reservation from client panel
+ *     tags: [Reservations]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Reservation ID
+ *         schema:
+ *           type: number
+ *     requestBody:
+ *       required: true
+ *       content:
+ *       application/json:
+ *         schema:
+ *           type: object
+ *           properties:
+ *             state:
+ *               type: string
+ *         required:
+ *           - state
+ *     responses:
+ *       200:
+ *         description: The reservation state was updated successfully
+ *       500:
+ *         description: Internal Server Error
+ */
+router.put("/state/decision/client/:id", reservationsController.handleStateReservationClient)
+
+/**
+ * @swagger
  * /reservations/user/{id}:
  *   get:
  *     summary: Get user reservations

@@ -138,7 +138,7 @@ const handleStateReservation = async (req, res) => {
   try {
     const { id } = req.params
     const { state } = req.body
-    if (![2, 1, 0].includes(state)) {
+    if (![1, 0].includes(state)) {
       return res.status(400).json({
         error: "Invalid state"
       })
@@ -162,8 +162,26 @@ const handleStateReservation = async (req, res) => {
         message: "Reservation rejected"
       })
     }
+  } catch (error) {
+    res.status(500).json({
+      error: error.message
+    })
+  }
+}
+
+const handleStateReservationClient = async (req, res) => {
+  try {
+    const { id } = req.params
+    const { state } = req.body
+    if (![2].includes(state)) {
+      return res.status(400).json({
+        error: "Invalid state"
+      })
+    }
+    let reservation
+    const options = { day: "2-digit", month: "2-digit", year: "numeric" }
     //user
-    else if (state === 2) {
+    if (state === 2) {
       reservation = await reservationsModel.findByIdAndUpdate(id, { status: "canceled" })
       const startDate = new Date(reservation.start_date).toLocaleDateString("en-GB", options)
       const endDate = new Date(reservation.end_date).toLocaleDateString("en-GB", options)
@@ -319,5 +337,6 @@ module.exports = {
   handleStateReservation,
   listReservationsAuthenticatedUser,
   updateReservationRequest,
-  getAllReservations
+  getAllReservations,
+  handleStateReservationClient
 }
